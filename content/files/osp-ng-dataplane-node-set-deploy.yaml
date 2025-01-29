@@ -33,7 +33,7 @@ spec:
           fixedIP: 172.19.0.100
         - name: external
           subnetName: subnet1
-          fixedIP: 172.21.0.100
+          fixedIP: 10.0.2.2
   nodeTemplate:
     ansibleSSHPrivateKeySecret: dataplane-ansible-ssh-private-key-secret
     managementNetwork: ctlplane
@@ -95,7 +95,7 @@ spec:
                 {{ external_ip }}/{{ external_cidr }}
              members:
              - type: interface
-               name: eth5
+               name: eth0
                mtu: 1500
                # force the MAC address of the bridge to this interface
                primary: true

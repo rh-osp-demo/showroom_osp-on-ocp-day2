@@ -54,10 +54,8 @@ spec:
     subnets:
     - name: subnet1
       allocationRanges:
-      - end: 172.21.0.250
-        start: 172.21.0.100
+      - end: 10.0.2.250
+        start: 10.0.2.2
       excludeAddresses:
-      - 172.21.0.10
-      - 172.21.0.15
-      - 172.21.0.16
-      cidr: 172.21.0.0/24
+      - 10.0.2.1
+      cidr: 10.0.2.0/24
