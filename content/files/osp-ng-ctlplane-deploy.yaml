@@ -160,6 +160,10 @@ spec:
       route: {}
     template:
       apiServiceTemplate:
+        customServiceConfig: |
+          [pci]
+          passthrough_whitelist = {"address": "00:03.0"}
+          alias = { "vendor_id":"8086", "product_id":"10d3", "device_type":"type-PF", "name":"a1" }
         override:
           service:
             internal:
