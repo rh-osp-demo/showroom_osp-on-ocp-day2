@@ -214,7 +214,7 @@ oc wait openstackversion openstack-galera-network-isolation --for=condition=Mino
 ----
 oc get openstackdataplanedeployment
 NAME             			     STATUS  MESSAGE
-edpm-deployment-ipam-ovn-update              True  Setup Complete
+edpm-deployment-ipam-update-dataplane-services              True  Setup Complete
 ----
 
 ## Rebooting the nodes
