@@ -63,7 +63,7 @@ Add your username and password
 [source,bash,role=execute]
 ----
 oc create secret generic subscription-manager \
---from-literal rhc_auth='{"login": {"username": "your_username", "password": "your_password"}}'
+--from-literal rhc_auth='{"login": {"username": "your_username", "password": "your_password"}}' -n openstack
 ----
 
 Create a secret for the subscription manager and a secret for the Red Hat registry:
