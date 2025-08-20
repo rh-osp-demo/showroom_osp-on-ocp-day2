@@ -77,6 +77,9 @@ spec:
            {% set min_viable_mtu = mtu_list | max %}
            network_config:
            - type: interface
+             name: eth0
+             use_dhcp: true 
+           - type: interface
              name: eth1
              mtu: {{ ctlplane_mtu }}
              dns_servers: {{ ctlplane_dns_nameservers }}
