@@ -118,6 +118,10 @@ openstack floating ip create public --floating-ip-addres 172.21.0.205
 
 Add the floating IP above to the new VM in the next step.
 
+[IMPORTANT]
+
+If you get an error saying the IP `172.21.0.205` is in use, replace it with the next one (eg. 172.21.0.206) in the `openstack` commands above and below and the `ssh` right after it.
+
 [source,bash,role=execute]
 ----
 openstack server add floating ip test-server 172.21.0.205

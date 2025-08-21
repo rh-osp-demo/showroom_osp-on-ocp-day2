@@ -53,11 +53,11 @@ ssh-keygen -f ./id -t ecdsa-sha2-nistp521 -N ''
 oc create secret generic nova-migration-ssh-key --from-file=ssh-privatekey=id --from-file=ssh-publickey=id.pub -n openstack -o yaml | oc apply -f-
 ----
 
-Create a secret for the subscription manager and a secret for the Red Hat registry:
+Create a secret for the subscription manager:
 
 [IMPORTANT]
 
-Add your username and password
+Add your username and password from the https://www.redhat.com/wapps/ugc/protected/password.html[Red Hat Customer Portal]
 
 [source,bash,role=execute]
 ----
@@ -65,11 +65,11 @@ oc create secret generic subscription-manager \
 --from-literal rhc_auth='{"login": {"username": "your_username", "password": "your_password"}}' -n openstack
 ----
 
-Create a secret for the subscription manager and a secret for the Red Hat registry:
+Create a secret for the Red Hat registry:
 
 [IMPORTANT]
 
-Add your username and password
+Add your service account username and password (token) generated as described in https://access.redhat.com/articles/RegistryAuthentication#creating-registry-service-accounts-6[Registry Service Accounts]
 
 [source,bash,role=execute]
 ----
