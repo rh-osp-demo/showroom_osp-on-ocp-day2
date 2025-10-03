@@ -18,30 +18,8 @@ oc get csv -n openstack-operators
 .Sample Output
 ----
 oc get csv -n openstack-operators
-NAME                                    DISPLAY                        VERSION               REPLACES                              PHASE
-barbican-operator.v1.0.5                Barbican Operator              1.0.5                 barbican-operator.v1.0.4              Succeeded
-cinder-operator.v1.0.5                  Cinder Operator                1.0.5                 cinder-operator.v1.0.4                Succeeded
-designate-operator.v1.0.5               Designate Operator             1.0.5                 designate-operator.v1.0.4             Succeeded
-glance-operator.v1.0.5                  Glance Operator                1.0.5                 glance-operator.v1.0.4                Succeeded
-heat-operator.v1.0.5                    Heat Operator                  1.0.5                 heat-operator.v1.0.4                  Succeeded
-horizon-operator.v1.0.5                 Horizon Operator               1.0.5                 horizon-operator.v1.0.4               Succeeded
-infra-operator.v1.0.5                   OpenStack Infra                1.0.5                 infra-operator.v1.0.4                 Succeeded
-ironic-operator.v1.0.5                  Ironic Operator                1.0.5                 ironic-operator.v1.0.4                Succeeded
-keystone-operator.v1.0.5                Keystone Operator              1.0.5                 keystone-operator.v1.0.4              Succeeded
-manila-operator.v1.0.5                  Manila Operator                1.0.5                 manila-operator.v1.0.4                Succeeded
-mariadb-operator.v1.0.5                 MariaDB Operator               1.0.5                 mariadb-operator.v1.0.4               Succeeded
-metallb-operator.v4.16.0-202412170135   MetalLB Operator               4.16.0-202412170135                                         Succeeded
-neutron-operator.v1.0.5                 Neutron Operator               1.0.5                 neutron-operator.v1.0.4               Succeeded
-nova-operator.v1.0.5                    Nova Operator                  1.0.5                 nova-operator.v1.0.4                  Succeeded
-octavia-operator.v1.0.5                 Octavia Operator               1.0.5                 octavia-operator.v1.0.4               Succeeded
-openshift-gitops-operator.v1.15.0       Red Hat OpenShift GitOps       1.15.0                openshift-gitops-operator.v1.12.0     Succeeded
-openstack-baremetal-operator.v1.0.5     OpenStack Baremetal Operator   1.0.5                 openstack-baremetal-operator.v1.0.4   Succeeded
-openstack-operator.v1.0.5               OpenStack                      1.0.5                 openstack-operator.v1.0.4             Succeeded
-ovn-operator.v1.0.5                     OVN Operator                   1.0.5                 ovn-operator.v1.0.4                   Succeeded
-placement-operator.v1.0.5               Placement Operator             1.0.5                 placement-operator.v1.0.4             Succeeded
-rabbitmq-cluster-operator.v1.0.5        RabbitMQ Cluster Operator      1.0.5                 rabbitmq-cluster-operator.v1.0.4      Succeeded
-swift-operator.v1.0.5                   Swift operator                 1.0.5                 swift-operator.v1.0.4                 Succeeded
-telemetry-operator.v1.0.5               Telemetry Operator             1.0.5                 telemetry-operator.v1.0.4             Succeeded
+NAME                                               DISPLAY                          VERSION                 REPLACES                                PHASE
+openstack-operator.v1.0.7                          OpenStack                        1.0.7                                                           Succeeded
 ----
 Manually approve the update:
 [source,bash,role=execute]
@@ -50,9 +28,9 @@ oc get installplan -n openstack-operators
 ----
 .Sample Output
 ----
-NAME            CSV                      APPROVAL   APPROVED
-install-9wrs7   cinder-operator.v1.0.6   Manual     false
-install-m76bj   infra-operator.v1.0.5    Manual     true
+NAME            CSV                          APPROVAL   APPROVED
+install-6qp5f   openstack-operator.v1.0.7    Manual     true
+install-q94wv   openstack-operator.v1.0.13   Manual     false
 ----
 Find and approve the pending InstallPlan:
 [source,bash,role=execute]
@@ -60,12 +38,6 @@ Find and approve the pending InstallPlan:
 oc patch installplan <installplan-name> -n openstack-operators --type merge --patch '{"spec": {"approved": true}}'
 ----
 This will approve the Operator update, and OpenShift will proceed with the update of the OpenStack Operators.
-
-Initialize the operator (just needed to move to FR2):
-[source,bash,role=execute]
-----
-oc apply -f osp-ng-openstack-operator-init.yaml
-----
 
 ### Explore the file OpenStackDataPlaneNodeSet to update OVN service
 
@@ -90,7 +62,6 @@ spec:
   nodeSets:
     - openstack-edpm-compute-1
   servicesOverride:
-    - configure-os
     - ovn
 ----
 
@@ -135,8 +106,8 @@ oc get openstackversion -n openstack
 ----
 .Sample Output
 ----
-NAME                                 TARGET VERSION      AVAILABLE VERSION   DEPLOYED VERSION
-openstack-control-plane   18.0.3-20241126.2   18.0.4-20250106.2   18.0.3-20241126.2
+NAME                      TARGET VERSION      AVAILABLE VERSION    DEPLOYED VERSION
+openstack-control-plane   18.0.6-20250317.1   18.0.11-20250812.2   18.0.6-20250317.1
 ----
 
 Update the target version in the *OpenStackVersion* custom resource (CR) to point to the version that you want to install. After you update the target version, the OVN service update on the control plane begins automatically.
@@ -147,7 +118,7 @@ Update the target version in the *OpenStackVersion* custom resource (CR) to poin
 ----
 cat <<EOF >openstackversionpatch.yaml
    "spec": {
-     "targetVersion": 18.0.4-20250106.2
+     "targetVersion": 18.0.11-20250812.2
      }
 EOF
 ----
