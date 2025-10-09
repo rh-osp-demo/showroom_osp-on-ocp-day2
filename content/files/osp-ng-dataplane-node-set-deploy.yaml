@@ -2,6 +2,7 @@ apiVersion: dataplane.openstack.org/v1beta1
 kind: OpenStackDataPlaneNodeSet
 metadata:
   name: openstack-edpm-compute-1
+  namespace: openstack
 spec:
   env:
     - name: ANSIBLE_FORCE_COLOR
@@ -118,12 +119,9 @@ spec:
              name: br-ex
              mtu: 1500
              use_dhcp: false
-             addresses:
-             - ip_netmask:
-                {{ external_ip }}/{{ external_cidr }}
              members:
              - type: interface
-               name: eth5
+               name: eth6
                mtu: 1500
                # force the MAC address of the bridge to this interface
                primary: true

@@ -2,6 +2,11 @@
 
 == Prerequisites
 
+[NOTE]
+====
+Skip this step if you run the ansible-playbooks deployment method.
+====
+
 In the bastion:
 
 [source,bash,role=execute,subs=attributes]

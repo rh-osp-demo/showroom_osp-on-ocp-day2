@@ -8,13 +8,12 @@ In the bastion, create the folder to store the ansible variables:
 
 [source,bash,role=execute]
 ----
-cd
 mkdir -p /home/lab-user/os-migrate-env
 ----
 
 Then,create the ansible inventory:
 
-[source,bash,role=execute]
+[source,bash,role=execute,subs=attributes]
 ----
 cat << EOF > /home/lab-user/os-migrate-env/inventory.yaml
 migrator:
@@ -51,9 +50,9 @@ SECURITY_GROUP_ID=$(openstack security group list | awk '/ basic / {print $2}')
 
 Create the os_migrate_vars.yamls file:
 
-[source,bash,role=execute,,subs=attributes]
+[source,bash,role=execute,subs=attributes]
 ----
-cat << EOF > /home/lab-user/os-migrate-env/os_migrate_vars.yaml
+cat << EOF > /home/lab-user/os-migrate-env/os_migrate_vars_demo_redhat_com.yaml
 runner_from_aee: false
 # osm working directory:
 os_migrate_vmw_data_dir: /tmp/os-migrate
@@ -80,7 +79,7 @@ os_migrate_configure_network: true
 os_migrate_tear_down: false
 
 vms_list:
-  - haproxy-user1
+  - haproxy-{guid}
 EOF
 ----
 
@@ -100,7 +99,7 @@ And finally create the secrets files with :
 
 [source,bash,role=execute,subs=attributes]
 ----
-cat << EOF > /home/lab-user/os-migrate-env/secrets.yaml
+cat << EOF > /home/lab-user/os-migrate-env/secrets_demo_redhat_com.yaml
 # VMware parameters:
 vcenter_hostname: {vcenter_console}
 vcenter_username: {vcenter_full_user}
@@ -136,7 +135,7 @@ In the bastion, launch the migration:
 [source,bash,role=execute,subs=attributes]
 ----
 sudo podman secret create conv-key /home/lab-user/.ssh/{guid}key.pem
-sudo podman run --network host -it -v $PWD/os-migrate-env:/runner/env:z --env ANSIBLE_CALLBACKS_ENABLED=profile_tasks --secret conv-key,target=/runner/key,mode=0600,type=mount --user root quay.io/os-migrate/vmware-migration-kit ansible-playbook -i /runner/env/inventory.yaml os_migrate.vmware_migration_kit.migration -e @/runner/env/os_migrate_vars.yaml -e @/runner/env/secrets.yaml
+sudo podman run --network host -it -v $PWD/os-migrate-env:/runner/env:z --env ANSIBLE_CALLBACKS_ENABLED=profile_tasks --secret conv-key,target=/runner/key,mode=0600,type=mount --user root quay.io/os-migrate/vmware-migration-kit ansible-playbook -i /runner/env/inventory.yaml os_migrate.vmware_migration_kit.migration -e @/runner/env/os_migrate_vars_demo_redhat_com.yaml -e @/runner/env/secrets_demo_redhat_com.yaml
 ----
 
 Check that the VM has been migrated:
@@ -147,39 +146,73 @@ alias openstack="oc exec -t openstackclient -- openstack"
 openstack server list
 ----
 
+Create a floating ip for the ha-proxy VM:
+
+[source,bash,role=execute,subs=attributes]
+----
+openstack floating ip create public
+----
+
 . Sample Output
 
-[source,bash]
+[source,bash,subs=attributes]
+----
++---------------------+--------------------------------------+
+| Field               | Value                                |
++---------------------+--------------------------------------+
+| created_at          | 2025-09-28T08:20:02Z                 |
+| description         |                                      |
+| dns_domain          |                                      |
+| dns_name            |                                      |
+| fixed_ip_address    | None                                 |
+| floating_ip_address | $FLOATING_IP_HA_PROXY                        |
+| floating_network_id | ea391fc3-52c8-4bba-a6d6-4cf0a81a87f6 |
+| id                  | f0ed05a7-5f8a-4a17-87ae-4f17b46ebdc4 |
+| name                | $FLOATING_IP_HA_PROXY                       |
+| port_details        | None                                 |
+| port_forwardings    | []                                   |
+| port_id             | None                                 |
+| project_id          | 1a9affc7161949009e43cb13dfb17307     |
+| qos_policy_id       | None                                 |
+| revision_number     | 0                                    |
+| router_id           | None                                 |
+| status              | DOWN                                 |
+| subnet_id           | None                                 |
+| tags                | []                                   |
+| updated_at          | 2025-09-28T08:20:02Z                 |
++---------------------+--------------------------------------+
+----
+
+[source,bash,role=execute,subs=attributes]
+----
+openstack server add floating ip haproxy-{guid} $FLOATING_IP_HA_PROXY
+----
+
+. Sample Output
+
+[source,bash,subs=attributes]
 ----
 +--------------------------------------+---------------+--------+-----------------------------------------+--------------------------+--------------------------+
 | ID                                   | Name          | Status | Networks                                | Image                    | Flavor                   |
 +--------------------------------------+---------------+--------+-----------------------------------------+--------------------------+--------------------------+
-| 77844fc9-1c83-4328-8995-3c9a008e8134 | haproxy-user1 | ACTIVE | private=192.168.100.237 | N/A (booted from volume) | osm-vmware-haproxy-tztc2 |
-| 7fa1709c-4b6e-4adf-8098-f57a0ee43abd | centos10-ch    | ACTIVE | private=192.168.100.196, 172.21.0.217 | centos9-image            | migrate                  |
+| 77844fc9-1c83-4328-8995-3c9a008e8134 | haproxy-{guid} | ACTIVE | private=10.0.0.25, FLOATING_IP | N/A (booted from volume) | osm-vmware-haproxy-tztc2 |
+| 7fa1709c-4b6e-4adf-8098-f57a0ee43abd | centos10-ch    | ACTIVE | private=10.0.0.27, {rhoso_conversion_host_ip} | centos9-image            | migrate                  |
 +--------------------------------------+---------------+--------+-----------------------------------------+--------------------------+--------------------------+
-----
-
-Create a Floating IP:
-
-[source,bash,role=execute]
-----
-openstack floating ip create public --floating-ip-addres 172.21.0.219
-----
-
-Add the floating IP above to the migrated VM in the next step.
-
-[source,bash,role=execute]
-----
-openstack server add floating ip haproxy-user1 172.21.0.219
-exit
 ----
 
 Ping the migrated VM:
 
 [source,bash]
 ----
-ping 172.21.0.219
-PING 172.21.0.219 (172.21.0.219) 56(84) bytes of data.
-64 bytes from 172.21.0.219: icmp_seq=1 ttl=63 time=1.41 ms
-64 bytes from 172.21.0.219: icmp_seq=2 ttl=63 time=0.792 ms
+ping $FLOATING_IP
+PING $FLOATING_IP (FLOATING_IP) 56(84) bytes of data.
+64 bytes from $FLOATING_IP: icmp_seq=1 ttl=63 time=1.41 ms
+64 bytes from $FLOATING_IP: icmp_seq=2 ttl=63 time=0.792 ms
+----
+
+Delete the virtual machine, before moving the next chapter.
+
+[source,bash,role=execute,subs=attributes]
+----
+openstack server delete haproxy-{guid}
 ----

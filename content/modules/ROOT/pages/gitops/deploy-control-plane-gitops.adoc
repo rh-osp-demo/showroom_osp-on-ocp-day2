@@ -105,6 +105,9 @@ patches:
       - op: replace
         path: /spec/nodeSelector/kubernetes.io~1hostname
         value: "control-plane-cluster-{guid}-1"
+      - op: replace
+        path: /spec/desiredState/interfaces/3/ipv4/address/0/ip
+        value: "1{rhoso_external_ip_worker_1}"
 
   - target:
       group: nmstate.io
@@ -118,6 +121,9 @@ patches:
       - op: replace
         path: /spec/nodeSelector/kubernetes.io~1hostname
         value: "control-plane-cluster-{guid}-2"
+      - op: replace
+        path: /spec/desiredState/interfaces/3/ipv4/address/0/ip
+        value: "{rhoso_external_ip_worker_2}"
 
   - target:
       group: nmstate.io
@@ -131,6 +137,9 @@ patches:
       - op: replace
         path: /spec/nodeSelector/kubernetes.io~1hostname
         value: "control-plane-cluster-{guid}-3"
+      - op: replace
+        path: /spec/desiredState/interfaces/3/ipv4/address/0/ip
+        value: "{rhoso_external_ip_worker_3}"
 
   - target:
       kind: NetConfig
