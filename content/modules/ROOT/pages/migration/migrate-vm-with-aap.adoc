@@ -123,6 +123,14 @@ Click *Create Host*.
 
 ==== Preparing the Bastion
 
+In the bastion, create the folder to store the ansible variables:
+
+[source,bash,role=execute]
+----
+cd
+mkdir -p /home/lab-user/os-migrate-env
+----
+
 Run the following commands to configure OpenStack CLI access:
 
 [source,bash,role=execute]

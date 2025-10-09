@@ -1,12 +1,5 @@
 = Install pre-requisites
 
-== Install Red Hat OpenStack Services on OpenShift 18
-
-As we will be using RHOSO as the target migration for Vmware use any of the following labs to install RHOSO 18:
-
-* xref:../connected/connected.adoc[Install RHOSO using CDN - Connected environment]
-* xref:../gitips/gitops.adoc[Install and discover RHOSO using Gitops ArgoCD]
-
 == Deploy a Conversion Host in your OpenStack environment 
 
 In the bastion:

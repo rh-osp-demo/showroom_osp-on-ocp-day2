@@ -2,33 +2,6 @@
 
 == Prerequisites
 
-From the bastion, connect to the *NFS server* host and configure the NFS share for Ansible Automation Platform:
-
-[source,bash,role=execute,subs=attributes]
-----
-ssh -i /home/lab-user/.ssh/{guid}key.pem cloud-user@nfsserver
-----
-
-Escalate to root:
-
-[source,bash,role=execute]
-----
-sudo -i
-----
-
-[source,bash,role=execute,subs=attributes]
-----
-mkdir -p /nfs/aap
-chmod 777 /nfs/aap
-cat << EOF >> /etc/exports
-/nfs/aap *(rw,sync,no_root_squash)
-EOF
-systemctl restart nfs-server
-logout
-----
-
-Back in the bastion, create the storageclass and persisten volume pointing to the just configured NFS share:
-
 In the bastion:
 
 [source,bash,role=execute,subs=attributes]
@@ -59,7 +32,6 @@ spec:
   volumeMode: Filesystem
 EOF
 ----
-
 
 == Install Ansible Execution Platform
 
