@@ -131,5 +131,5 @@ Execute the following command to deploy RHOSO:
 
 [source,bash,role=execute,subs=attributes]
 ----
-deploy-from-bastion.sh --inventory inventory/hosts-{guid}.yml --credentials credentials.yml
+./deploy-from-bastion.sh --inventory inventory/hosts-{guid}.yml --credentials credentials.yml
 ----
