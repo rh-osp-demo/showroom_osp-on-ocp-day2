@@ -35,7 +35,7 @@ If needed, you can navigate to the OpenShift console URL: {openshift_cluster_con
 
 From your bastion, clone the repository:
 
-[source,bash,subs=attributes]
+[source,bash,role=execute,subs=attributes]
 ----
 # Clone the repository
 git clone https://github.com/rh-osp-demo/showroom_osp-on-ocp-day2.git labrepo
@@ -50,7 +50,7 @@ cp credentials/credentials.yml.example inventory/credentials.yml
 
 Edit `inventory/hosts-{guid}.yml` with your environment details:
 
-[source,yaml,subs=attributes]
+[source,yaml,role=execute,subs=attributes]
 ----
 cat << EOF > inventory/hosts-{guid}.yml
 
@@ -115,7 +115,7 @@ Fill in the values for rhc_username and rhc_password, these are the credentials 
 
 Edit `credentials.yml` with your environment details:
 
-[source,yaml,subs=attributes]
+[source,yaml,role=execute,subs=attributes]
 ----
 cat << EOF > credentials.yml
 registry_username: "12345678|myserviceaccount"
@@ -129,7 +129,7 @@ EOF
 
 Execute the following command to deploy RHOSO:
 
-[source,bash,subs=attributes]
+[source,bash,role=execute,subs=attributes]
 ----
 deploy-from-bastion.sh --inventory inventory/hosts-{guid}.yml --credentials credentials.yml
 ----
