@@ -195,7 +195,7 @@ oc get routes -n ansible-automation-platform
 The URL of your AAP dashboard is:
 [source,bash,role=execute,subs=attributes]
 ----
-aap-for-rhoso-migrations-ansible-automation-platform.apps.{guid}.dynamic.redhatworkshops.io
+aap-for-rhoso-migrations-ansible-automation-platform.apps.cluster-{guid}.dynamic.redhatworkshops.io
 ----
 
 Navigate that URL with your browser and finish the Ansible Automation Platform by subscribing the AAP.
