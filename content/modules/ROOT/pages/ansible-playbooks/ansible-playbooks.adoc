@@ -43,7 +43,7 @@ cd labrepo/ansible-playbooks
 
 # Copy and configure inventory
 cp inventory/hosts.yml.example inventory/hosts-{guid}.yml
-cp credentials/credentials.yml.example inventory/credentials.yml
+cp credentials.yml.example credentials.yml
 ----
 
 === 2. Configure Inventory
@@ -61,8 +61,14 @@ all:
     
     # REQUIRED: Red Hat Customer Portal Credentials  
     # Your login credentials for https://access.redhat.com
-    rhc_username: "your-rh-username@email.com"       # Your RH Customer Portal username
-    rhc_password: "YourRHPassword123"                 # Your RH Customer Portal password
+
+    # Red Hat Registry credentials (required)
+    registry_username: ""  # Add your Red Hat registry service account username
+    registry_password: ""  # Add your Red Hat registry service account password/token
+    
+    # Subscription Manager credentials (required)
+    rhc_username: ""  # Add your Red Hat Customer Portal username
+    rhc_password: ""  # Add your Red Hat Customer Portal password
     
     # OPTIONAL: Internal lab hostnames (usually defaults work)
     nfs_server_hostname: "nfsserver"                  # Internal NFS server hostname
