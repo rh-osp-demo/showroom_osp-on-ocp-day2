@@ -44,5 +44,4 @@
 ** xref:migration/prereqs-migration.adoc[Perform Prerequisite Operations]
 ** xref:migration/install-os-migrate.adoc[Install the Red Hat OpenStack Vmware Migration Kit collection and execute a VM migration from CLI]
 ** xref:migration/install-aap-configure.adoc[Install Ansible Automation Platform]
-** xref:migration/ansible-builder.adoc[Prepare your Ansible Execution Environment for Red Hat OpenStack VMware Migration toolkit]
 ** xref:migration/migrate-vm-with-aap.adoc.adoc[Launching a Migration using Ansible Automation Platform]
