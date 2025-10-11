@@ -4,7 +4,7 @@
 
 === Creating Credentials
 
-1. From the navigation panel, go to *Automation Execution* → *Credentials*.
+1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Credentials*.
 2. Click *Create Credentials* and set the following parameters:
    * **Name:** Bastion key
    * **Credential Type:** Machine
@@ -80,6 +80,7 @@ Click *Create Host*.
 1. From the navigation panel, go to *Automation Execution* → *Projects*.
 2. Click *Create Project* and set the following parameters:
    * **Name:** vmware migration toolkit project
+   * **Organization:** Default
    * **Execution Environment:** vmware migration toolkit Execution Environment
    * **Source Control Type:** Git
    * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
@@ -118,7 +119,7 @@ Create the `os_migrate_vars.yaml` file:
 
 [source,bash,role=execute,subs=attributes]
 ----
-cat << EOF > os_migrate_vars.yaml
+cat << EOF > /home/lab-user/os-migrate-env/os_migrate_for_aap.yaml
 os_migrate_tear_down: false
 # osm working directory:
 runner_from_aee: true
@@ -177,7 +178,7 @@ EOF
    * **Playbook:** `playbooks/migration.yml`
    * **Execution Environment:** vmware migration toolkit Execution Environment
    * **Credentials:** Bastion key
-   * **Extra Variables:** Copy the content of `/home/lab-user/os-migrate-env/os_migrate_for_awx.yaml` from the bastion
+   * **Extra Variables:** Copy the content of `/home/lab-user/os-migrate-env/os_migrate_for_aap.yaml` from the bastion
 3. Click *Create Job Template*.
 
 === Running the Migration
