@@ -20,12 +20,15 @@ sudo -i
 ----
 mkdir -p /nfs/cinder
 mkdir -p /nfs/glance
+mkdir -p /nfs/aap
 chmod 777 /nfs/cinder
 chmod 777 /nfs/glance
+chmod 777 /nfs/aap
 
 cat << EOF > /etc/exports
 /nfs/cinder *(rw,sync,no_root_squash)
 /nfs/glance *(rw,sync,no_root_squash)
+/nfs/aap *(rw,sync,no_root_squash)
 EOF
 
 nmcli con delete 'Wired connection 1'

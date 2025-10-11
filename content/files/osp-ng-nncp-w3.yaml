@@ -44,17 +44,17 @@ spec:
       name: enp6s0
       state: up
       type: ethernet
-    - description: Configuring external enp7s0
+    - description: Configuring external enp8s0
       ipv4:
         address:
-        - ip: 172.21.0.12
-          prefix-length: 24 
+        - ip: EXTERNAL_IP_WORKER_3
+          prefix-length: 16
         enabled: true
         dhcp: false
       ipv6:
         enabled: false
       mtu: 1500
-      name: enp7s0
+      name: enp8s0
       state: up
       type: ethernet
     - description: Configuring ctlplane enp3s0

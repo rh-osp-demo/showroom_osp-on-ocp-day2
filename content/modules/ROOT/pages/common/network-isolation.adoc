@@ -7,9 +7,9 @@ Networking IP ranges table:
 |             | VLAN | CIDR             | NetConfig allocationRange                               | MetalLB IPAddressPool range | net-attach-def ipam range | OCP worker nncp range    
 |  ctlplane   |  n/a | 172.22.0.0/24    | 172.22.0.100 - 172.22.0-120 172.22.0.150 - 172.22.0.200 | 172.22.0.80 - 172.22.0.90   | 172.22.0.30 - 172.22.0.70 | 172.22.0.10 - 172.22.0.12
 | external    | n/a  | 172.21.0.0/24    | 172.21.0.61 - 172.21.0.90                               | n/a                         | n/a                       | n/a                      
-| internalapi | 20   | 172.17.0.0/24    | 172.17.0.100 - 172.17.0.250                             | 172.17.0.80 - 172.17.0.90   | 172.17.0.30 - 172.17.0.70 | 172.17.0.10 - 172.17.0.12
-| storage     | 21   | 172.18.0.0/24    | 172.18.0.100 - 172.18.0.250                             | 172.18.0.80 - 172.18.0.90   | 172.18.0.30 - 172.18.0.70 | 172.18.0.10 - 172.18.0.12
-| tenant      | 22   | 172.19.0.0/24    | 172.19.0.100 - 172.19.0.250                             | 172.18.0.80 - 172.18.0.90   | 172.19.0.30 - 172.19.0.70 | 172.19.0.10 - 172.19.0.12
+| internalapi | n/a   | 172.17.0.0/24    | 172.17.0.100 - 172.17.0.250                             | 172.17.0.80 - 172.17.0.90   | 172.17.0.30 - 172.17.0.70 | 172.17.0.10 - 172.17.0.12
+| storage     | n/a   | 172.18.0.0/24    | 172.18.0.100 - 172.18.0.250                             | 172.18.0.80 - 172.18.0.90   | 172.18.0.30 - 172.18.0.70 | 172.18.0.10 - 172.18.0.12
+| tenant      | n/a   | 172.19.0.0/24    | 172.19.0.100 - 172.19.0.250                             | 172.18.0.80 - 172.18.0.90   | 172.19.0.30 - 172.19.0.70 | 172.19.0.10 - 172.19.0.12
 |======================================================================================================================================================================================
 
 
@@ -28,6 +28,15 @@ Replace the UUID to the GUID of your environment in the repo files:
 [source,bash,role=execute,subs=attributes]
 ----
 find . -type f -exec sed -i 's/UUID/{guid}/g' {} +
+----
+
+Replace the IPs of the worker nodes by the variables from the lab:
+
+[source,bash,role=execute,subs=attributes]
+----
+sed -i 's/EXTERNAL_IP_WORKER_1/{rhoso_external_ip_worker_1}/' osp-ng-nncp-w1.yaml
+sed -i 's/EXTERNAL_IP_WORKER_2/{rhoso_external_ip_worker_2}/' osp-ng-nncp-w2.yaml
+sed -i 's/EXTERNAL_IP_WORKER_3/{rhoso_external_ip_worker_3}/' osp-ng-nncp-w3.yaml
 ----
 
 Apply preconfigured yamls indivdually:
