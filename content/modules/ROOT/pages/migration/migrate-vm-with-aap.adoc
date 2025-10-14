@@ -115,7 +115,7 @@ PROJECT_ID=$(openstack project list | grep ' admin ' | awk '{print $2}')
 AUTH_URL=$(openstack endpoint list --service identity --interface public -c URL -f value)
 ----
 
-Create the `os_migrate_vars.yaml` file:
+Create the `os_migrate_for_aap.yaml` file:
 
 [source,bash,role=execute,subs=attributes]
 ----
