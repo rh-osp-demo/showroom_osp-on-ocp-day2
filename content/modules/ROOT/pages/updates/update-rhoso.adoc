@@ -226,7 +226,7 @@ spec:
 +
 [source,bash,role=execute]
 ----
-oc create -f openstack-edpm-reboot.check.yaml
+oc create -f openstack-edpm-reboot-check.yaml
 ----
 . Verify that the *openstack-edpm-compute-1-reboot* deployment completed:
 +

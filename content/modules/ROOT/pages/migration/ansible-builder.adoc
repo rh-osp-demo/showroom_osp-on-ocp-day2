@@ -6,7 +6,7 @@ To install ansible-builder on the bastion host:
 
 [source,bash]
 ----
-dnf install --enablerepo=ansible-automation-platform-2.5-for-rhel-9-x86_64-rpms ansible-builder
+dnf install ansible-builder
 ----
 
 == Using Private Automation Hub
