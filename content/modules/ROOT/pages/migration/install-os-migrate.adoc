@@ -135,7 +135,7 @@ In the bastion, launch the migration:
 [source,bash,role=execute,subs=attributes]
 ----
 sudo podman secret create conv-key /home/lab-user/.ssh/{guid}key.pem
-sudo podman run --network host -it -v $PWD/os-migrate-env:/runner/env:z --env ANSIBLE_CALLBACKS_ENABLED=profile_tasks --secret conv-key,target=/runner/key,mode=0600,type=mount --user root quay.io/os-migrate/vmware-migration-kit ansible-playbook -i /runner/env/inventory.yaml os_migrate.vmware_migration_kit.migration -e @/runner/env/os_migrate_vars_demo_redhat_com.yaml -e @/runner/env/secrets_demo_redhat_com.yaml
+sudo podman run --network host -it -v $PWD/os-migrate-env:/runner/env:z --env ANSIBLE_CALLBACKS_ENABLED=profile_tasks --secret conv-key,target=/runner/key,mode=0600,type=mount --user root quay.io/os-migrate/vmware-migration-kit:stable ansible-playbook -i /runner/env/inventory.yaml os_migrate.vmware_migration_kit.migration -e @/runner/env/os_migrate_vars_demo_redhat_com.yaml -e @/runner/env/secrets_demo_redhat_com.yaml
 ----
 
 Check that the VM has been migrated:
