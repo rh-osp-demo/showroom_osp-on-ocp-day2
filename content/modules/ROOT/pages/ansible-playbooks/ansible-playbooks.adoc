@@ -131,6 +131,95 @@ rhc_password: "YourRHPassword123"
 EOF
 ----
 
+[IMPORTANT]
+====
+This section is optional and only required if you plan to deploy RHOSP 17.1 standalone environment for adoption purposes.
+If you are only deploying RHOSO, skip to section "3. Deploy RHOSO".
+====
+
+=== (Optional) Deploy RHOSP 17.1 Standalone Environment
+
+This step is optional and only required when deploying RHOSP 17.1 standalone environment for adoption purposes. When deploying RHOSP, you must first configure the NFS server, then deploy RHOSP.
+
+==== Prerequisites
+
+* Subscription Manager credentials configured in your inventory file
+* SSH access to the bastion host
+* All RHOSP hosts (allinone, compute02, compute03) accessible from bastion
+
+==== Step 1: Configure NFS Server
+
+The NFS server must be configured before deploying RHOSP as it provides storage for Glance (image service) and Cinder (block storage service).
+
+Execute the following command to configure the NFS server:
+
+[source,bash,role=execute,subs=attributes]
+----
+./deploy-from-bastion.sh --inventory inventory/hosts-{guid}.yml --credentials credentials.yml nfs-server
+----
+
+[NOTE]
+====
+This step creates the required NFS directories (`/nfs/cinder` and `/nfs/glance`) and configures the NFS exports needed for RHOSP deployment.
+====
+
+==== Step 2: Update Inventory for RHOSP
+
+Ensure your inventory file includes the RHOSP-specific hosts. Add the following to your `inventory/hosts-{guid}.yml`:
+
+[source,yaml,role=execute,subs=attributes]
+----
+# Standalone controller (all-in-one) operations
+standalone:
+  hosts:
+    allinone:
+      ansible_host: "{{ standalone_hostname | default('allinone') }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# Compute node operations
+compute_nodes:
+  hosts:
+    compute02:
+      ansible_host: "{{ compute_hostname_02 | default('compute02') }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+    compute03:
+      ansible_host: "{{ compute_hostname_03 | default('compute03') }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+----
+
+==== Step 3: Deploy RHOSP 17.1
+
+Execute the following command to deploy RHOSP 17.1 standalone environment:
+
+[source,bash,role=execute,subs=attributes]
+----
+./deploy-from-bastion.sh --inventory inventory/hosts-{guid}.yml --credentials credentials.yml deploy-rhosp
+----
+
+[NOTE]
+====
+This deployment process:
+* Configures network interfaces on all RHOSP hosts (allinone, compute02, compute03)
+* Installs and configures RHOSP 17.1 standalone controller on the allinone host
+* Disables the standalone compute service
+* Installs and configures compute nodes (compute02 and compute03)
+* Discovers compute hosts
+* Creates test workloads (flavors, images, networks, security groups, and test servers)
+
+The deployment process can take 30-60 minutes to complete depending on your environment.
+====
+
+[WARNING]
+====
+This installation method for RHOSP 17.1 is not supported and is intended for lab or testing purposes only. It is designed specifically for adoption scenarios where you need to migrate workloads from a standalone RHOSP environment to RHOSO.
+====
+
 === 3. Deploy RHOSO
 
 Execute the following command to deploy RHOSO:
