@@ -625,95 +625,20 @@ run_deployment() {
         sed -i 's/ansible_python_interpreter: "{{ ansible_playbook_python }}"/ansible_python_interpreter: "\/usr\/bin\/python3.11"/' "$temp_inventory"
     fi
     
-    # Set Python interpreter for nfs-server and compute_nodes hosts that don't have it set
-    # community.general.nmcli requires Python 3.7+, so we need to ensure a compatible version
-    local python_interpreter="/usr/bin/python3.11"
-    local needs_python_fix=false
-    
-    # Check if nfs-server needs Python interpreter
-    if ! grep -A 10 "nfs-server:" "$temp_inventory" | grep -q "ansible_python_interpreter"; then
-        needs_python_fix=true
-    fi
-    
-    # Check if compute_nodes need Python interpreter
-    if ! grep -A 10 "compute01:" "$temp_inventory" | grep -q "ansible_python_interpreter"; then
-        needs_python_fix=true
-    fi
-    
-    if [[ "$needs_python_fix" == "true" ]]; then
-        print_status "Setting Python interpreter for remote hosts (required for community.general.nmcli)..."
-        # Note: Remote hosts (nfs-server, compute nodes) must have Python 3.7+ installed for community.general.nmcli to work
-        
-        # Export variables for Python script
-        export TEMP_INVENTORY="$temp_inventory"
-        export PYTHON_INTERPRETER="$python_interpreter"
-        
-        # Use Python to reliably add the Python interpreter to nfs-server and compute_nodes host configurations
-        if python3 << 'PYTHON_EOF'
-import yaml
-import sys
-import os
-
-inventory_file = os.environ.get('TEMP_INVENTORY')
-python_interpreter = os.environ.get('PYTHON_INTERPRETER', '/usr/bin/python3.11')
-
-try:
-    with open(inventory_file, 'r') as f:
-        inventory = yaml.safe_load(f)
-    
-    hosts_updated = []
-    
-    # Find nfs-server host and add Python interpreter if not present
-    if 'nfsserver' in inventory and 'hosts' in inventory['nfsserver']:
-        for host_name, host_vars in inventory['nfsserver']['hosts'].items():
-            if isinstance(host_vars, dict) and 'ansible_python_interpreter' not in host_vars:
-                host_vars['ansible_python_interpreter'] = python_interpreter
-                hosts_updated.append(f"nfsserver/{host_name}")
-    
-    # Find compute_nodes hosts and add Python interpreter if not present
-    if 'compute_nodes' in inventory and 'hosts' in inventory['compute_nodes']:
-        for host_name, host_vars in inventory['compute_nodes']['hosts'].items():
-            if isinstance(host_vars, dict) and 'ansible_python_interpreter' not in host_vars:
-                host_vars['ansible_python_interpreter'] = python_interpreter
-                hosts_updated.append(f"compute_nodes/{host_name}")
-    
-    if hosts_updated:
-        print(f"Added Python interpreter to: {', '.join(hosts_updated)}")
-    
-    with open(inventory_file, 'w') as f:
-        yaml.dump(inventory, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-except Exception as e:
-    print(f"Python YAML manipulation failed: {e}", file=sys.stderr)
-    sys.exit(1)
-PYTHON_EOF
-        then
-            print_status "✓ Python interpreter set for remote hosts: $python_interpreter"
-        else
-            print_warning "Failed to set Python interpreter via Python, trying sed fallback..."
-            # Fallback: simple sed approach
-            # For nfs-server
-            if ! grep -A 5 "nfs-server:" "$temp_inventory" | grep -q "ansible_python_interpreter"; then
-                if grep -A 5 "nfs-server:" "$temp_inventory" | grep -q "ansible_user:"; then
-                    sed -i '/ansible_user:.*cloud-user/a\      ansible_python_interpreter: '"$python_interpreter"'' "$temp_inventory"
-                else
-                    sed -i '/nfs-server:/a\      ansible_python_interpreter: '"$python_interpreter"'' "$temp_inventory"
-                fi
-                print_status "✓ Python interpreter set for nfs-server (via sed fallback): $python_interpreter"
-            fi
-            # For compute nodes
-            if ! grep -A 5 "compute01:" "$temp_inventory" | grep -q "ansible_python_interpreter"; then
-                if grep -A 5 "compute01:" "$temp_inventory" | grep -q "ansible_user:"; then
-                    sed -i '/ansible_user:.*cloud-user/a\      ansible_python_interpreter: '"$python_interpreter"'' "$temp_inventory"
-                else
-                    sed -i '/compute01:/a\      ansible_python_interpreter: '"$python_interpreter"'' "$temp_inventory"
-                fi
-                print_status "✓ Python interpreter set for compute01 (via sed fallback): $python_interpreter"
-            fi
-        fi
-        unset TEMP_INVENTORY PYTHON_INTERPRETER
-    else
-        print_status "Remote hosts already have Python interpreter configured"
-    fi
+    # Note: We no longer automatically set Python interpreter for remote hosts
+    # Since we replaced community.general.nmcli with command modules, Python 3.7+ is no longer required
+    # Ansible will auto-detect Python 2.7+ or 3.x on remote hosts
+    # Users can optionally set ansible_python_interpreter in their inventory if needed
+    # 
+    # The following code block is commented out to prevent automatic Python interpreter injection:
+    # (This was causing issues when Python 3.11 didn't exist on remote hosts)
+    #
+    # local python_interpreter="/usr/bin/python3.11"
+    # local needs_python_fix=false
+    # 
+    # if [[ "$needs_python_fix" == "true" ]]; then
+    #     print_status "Setting Python interpreter for remote hosts..."
+    #     # Note: This is no longer needed since we use command modules instead of community.general.nmcli
     
     # If credentials were provided via file, inject them into the inventory
     if [[ -n "${CRED_REGISTRY_USERNAME:-}" ]]; then
