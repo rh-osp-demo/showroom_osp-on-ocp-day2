@@ -176,6 +176,15 @@
   delay: 10
   changed_when: false
 
+- name: Wait for MetalLB webhook service to have endpoints
+  shell: |
+    oc get endpoints metallb-operator-controller-manager-service -n metallb-system -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null | grep -q '[0-9]'
+  register: metallb_webhook_endpoints_check
+  until: metallb_webhook_endpoints_check.rc == 0
+  retries: 30
+  delay: 5
+  changed_when: false
+
 - name: Create MetalLB instance using oc (with retries)
   shell: |
     oc apply -f - <<EOF
