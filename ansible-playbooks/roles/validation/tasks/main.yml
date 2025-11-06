@@ -7,8 +7,9 @@
   become: true
   vars:
     rhoso_external_ip_bastion: "{{ hostvars[inventory_hostname].get('rhoso_external_ip_bastion', '172.21.0.50') }}"
-  changed_when: "'Connection successfully added' in stderr or 'Connection successfully added' in stdout"
-  failed_when: "rc != 0 and 'already exists' not in stderr"
+  register: nmcli_bastion_result
+  changed_when: "'Connection successfully added' in (nmcli_bastion_result.stdout | default('')) or 'Connection successfully added' in (nmcli_bastion_result.stderr | default(''))"
+  failed_when: "nmcli_bastion_result.rc != 0 and 'already exists' not in (nmcli_bastion_result.stderr | default(''))"
 
 - name: Activate bastion external network connection
   ansible.builtin.command:

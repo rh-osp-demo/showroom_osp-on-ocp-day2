@@ -41,8 +41,9 @@
     cmd: nmcli con add con-name "static-eth1" ifname eth1 type ethernet ip4 {{ nfs_server_ip }}/24
   delegate_to: nfs-server
   become: true
-  changed_when: "'Connection successfully added' in stderr or 'Connection successfully added' in stdout"
-  failed_when: "rc != 0 and 'already exists' not in stderr"
+  register: nmcli_add_result
+  changed_when: "'Connection successfully added' in (nmcli_add_result.stdout | default('')) or 'Connection successfully added' in (nmcli_add_result.stderr | default(''))"
+  failed_when: "nmcli_add_result.rc != 0 and 'already exists' not in (nmcli_add_result.stderr | default(''))"
 
 - name: Activate static network connection
   ansible.builtin.command:

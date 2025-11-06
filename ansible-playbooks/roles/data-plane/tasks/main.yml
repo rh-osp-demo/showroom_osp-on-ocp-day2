@@ -17,8 +17,9 @@
     cmd: nmcli con add con-name "static-eth1" ifname eth1 type ethernet ip4 {{ compute_nodes[0].ctlplane_ip }}/24 ipv4.dns "172.22.0.89"
   delegate_to: compute01
   become: true
-  changed_when: "'Connection successfully added' in stderr or 'Connection successfully added' in stdout"
-  failed_when: "rc != 0 and 'already exists' not in stderr"
+  register: nmcli_static_result
+  changed_when: "'Connection successfully added' in (nmcli_static_result.stdout | default('')) or 'Connection successfully added' in (nmcli_static_result.stderr | default(''))"
+  failed_when: "nmcli_static_result.rc != 0 and 'already exists' not in (nmcli_static_result.stderr | default(''))"
 
 - name: Activate static-eth1 connection
   ansible.builtin.command:
@@ -32,8 +33,9 @@
     cmd: nmcli con add con-name "eth0-dhcp" ifname eth0 type ethernet ipv4.method auto ipv6.method ignore
   delegate_to: compute01
   become: true
-  changed_when: "'Connection successfully added' in stderr or 'Connection successfully added' in stdout"
-  failed_when: "rc != 0 and 'already exists' not in stderr"
+  register: nmcli_dhcp_result
+  changed_when: "'Connection successfully added' in (nmcli_dhcp_result.stdout | default('')) or 'Connection successfully added' in (nmcli_dhcp_result.stderr | default(''))"
+  failed_when: "nmcli_dhcp_result.rc != 0 and 'already exists' not in (nmcli_dhcp_result.stderr | default(''))"
 
 - name: Activate eth0-dhcp connection
   ansible.builtin.command:
