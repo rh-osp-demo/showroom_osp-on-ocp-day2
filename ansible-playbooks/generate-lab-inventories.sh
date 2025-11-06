@@ -307,6 +307,7 @@ nfsserver:
     nfs-server:
       ansible_host: "nfsserver"
       ansible_user: "cloud-user"
+      ansible_python_interpreter: /usr/bin/python3.11  # Required for community.general.nmcli (needs Python 3.7+)
       ansible_ssh_private_key_file: "/home/$bastion_user/.ssh/${guid}key.pem"
       # SSH through bastion host
       ansible_ssh_common_args: '-o ProxyCommand="sshpass -p $bastion_password ssh -W %h:%p -p $bastion_port $bastion_user@$bastion_hostname"'
@@ -317,6 +318,7 @@ compute_nodes:
     compute01:
       ansible_host: "compute01"
       ansible_user: "cloud-user"
+      ansible_python_interpreter: /usr/bin/python3.11  # Required for community.general.nmcli (needs Python 3.7+)
       ansible_ssh_private_key_file: "/home/$bastion_user/.ssh/${guid}key.pem"
       # SSH through bastion host
       ansible_ssh_common_args: '-o ProxyCommand="sshpass -p $bastion_password ssh -W %h:%p -p $bastion_port $bastion_user@$bastion_hostname"'
