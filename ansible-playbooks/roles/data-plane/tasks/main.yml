@@ -13,41 +13,36 @@
   become: true
 
 - name: Configure static eth1 interface for control plane
-  community.general.nmcli:
-    conn_name: "static-eth1"
-    ifname: eth1
-    type: ethernet
-    ip4: "{{ compute_nodes[0].ctlplane_ip }}/24"
-    dns4:
-      - "172.22.0.89"
-    state: present
+  ansible.builtin.command:
+    cmd: nmcli con add con-name "static-eth1" ifname eth1 type ethernet ip4 {{ compute_nodes[0].ctlplane_ip }}/24 ipv4.dns "172.22.0.89"
   delegate_to: compute01
   become: true
+  register: nmcli_static_result
+  changed_when: "'Connection successfully added' in (nmcli_static_result.stdout | default('')) or 'Connection successfully added' in (nmcli_static_result.stderr | default(''))"
+  failed_when: "nmcli_static_result.rc != 0 and 'already exists' not in (nmcli_static_result.stderr | default(''))"
 
 - name: Activate static-eth1 connection
-  community.general.nmcli:
-    conn_name: "static-eth1"
-    state: up
+  ansible.builtin.command:
+    cmd: nmcli con up "static-eth1"
   delegate_to: compute01
   become: true
+  changed_when: true
 
 - name: Configure eth0 DHCP connection
-  community.general.nmcli:
-    conn_name: "eth0-dhcp"
-    ifname: eth0
-    type: ethernet
-    method4: auto
-    method6: ignore
-    state: present
+  ansible.builtin.command:
+    cmd: nmcli con add con-name "eth0-dhcp" ifname eth0 type ethernet ipv4.method auto ipv6.method ignore
   delegate_to: compute01
   become: true
+  register: nmcli_dhcp_result
+  changed_when: "'Connection successfully added' in (nmcli_dhcp_result.stdout | default('')) or 'Connection successfully added' in (nmcli_dhcp_result.stderr | default(''))"
+  failed_when: "nmcli_dhcp_result.rc != 0 and 'already exists' not in (nmcli_dhcp_result.stderr | default(''))"
 
 - name: Activate eth0-dhcp connection
-  community.general.nmcli:
-    conn_name: "eth0-dhcp"
-    state: up
+  ansible.builtin.command:
+    cmd: nmcli con up "eth0-dhcp"
   delegate_to: compute01
   become: true
+  changed_when: true
 
 - name: Set stable ID for eth0 connection
   command: nmcli con mod eth0-dhcp connection.stable-id user-set

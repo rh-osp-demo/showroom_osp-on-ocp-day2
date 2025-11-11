@@ -627,6 +627,21 @@ run_deployment() {
         sed -i 's/ansible_python_interpreter: "{{ ansible_playbook_python }}"/ansible_python_interpreter: "\/usr\/bin\/python3.11"/' "$temp_inventory"
     fi
     
+    # Note: We no longer automatically set Python interpreter for remote hosts
+    # Since we replaced community.general.nmcli with command modules, Python 3.7+ is no longer required
+    # Ansible will auto-detect Python 2.7+ or 3.x on remote hosts
+    # Users can optionally set ansible_python_interpreter in their inventory if needed
+    # 
+    # The following code block is commented out to prevent automatic Python interpreter injection:
+    # (This was causing issues when Python 3.11 didn't exist on remote hosts)
+    #
+    # local python_interpreter="/usr/bin/python3.11"
+    # local needs_python_fix=false
+    # 
+    # if [[ "$needs_python_fix" == "true" ]]; then
+    #     print_status "Setting Python interpreter for remote hosts..."
+    #     # Note: This is no longer needed since we use command modules instead of community.general.nmcli
+    
     # If credentials were provided via file, inject them into the inventory
     if [[ -n "${CRED_REGISTRY_USERNAME:-}" ]]; then
         print_status "Injecting credentials from file into inventory..."
