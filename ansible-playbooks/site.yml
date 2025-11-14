@@ -38,6 +38,17 @@
   tags:
     - nfs-server
 
+- name: Deploy RHOSP 17.1 - Required only when doing adoption
+  hosts: bastion
+  become: false
+  gather_facts: true
+  vars_files:
+    - vars/main.yml
+  roles:
+    - rhosp
+  tags:
+    - deploy-rhosp
+
 - name: Prepare OpenShift for Network Isolation
   hosts: bastion
   become: false

@@ -355,6 +355,7 @@ show_usage() {
     echo "  data-plane    - Configure compute nodes"
     echo "  validation    - Verify deployment"
     echo "  showroom      - Configure Showroom (optional)"
+    echo "  deploy-rhosp  - Deploy RHOSP 17.1 standalone environment (for adoption)"
     echo "  full          - Run complete deployment (default)"
     echo "  optional      - Enable optional services (Heat, Swift)"
     echo ""
@@ -364,6 +365,7 @@ show_usage() {
     echo "  $0 -c                                 # Check inventory configuration"
     echo "  $0 -d control-plane                   # Dry run of control plane deployment"
     echo "  $0 -v prerequisites                   # Verbose prerequisites installation"
+    echo "  $0 deploy-rhosp                        # Deploy RHOSP 17.1 standalone environment"
     echo "  $0 showroom                           # Configure Showroom only"
     echo "  $0 -b full                            # Run full deployment in background"
     echo "  $0 --follow-logs install-operators    # Run and follow logs in real-time"
@@ -754,6 +756,11 @@ run_deployment() {
         'showroom')
             print_status 'Configuring Showroom...'
             ansible-playbook site.yml --tags showroom $ansible_opts
+            exit_code=$?
+            ;;
+        'deploy-rhosp')
+            print_status 'Deploying RHOSP 17.1 standalone environment...'
+            ansible-playbook site.yml --tags deploy-rhosp $ansible_opts
             exit_code=$?
             ;;
         'full')
