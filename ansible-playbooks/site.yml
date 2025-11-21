@@ -48,6 +48,7 @@
     - rhosp
   tags:
     - deploy-rhosp
+    - never
 
 - name: Prepare OpenShift for Network Isolation
   hosts: bastion
