@@ -1,4 +1,4 @@
-= Install pre-requisites
+= Install pre-requisites using CentOS Stream 10
 
 == Infrastructure Components in the Migration Process
 
@@ -29,16 +29,11 @@ To transfer virtual machine data efficiently, the migration process utilizes a s
 
 In the bastion:
 
-. Navigate to https://access.redhat.com/downloads/content/rhel
-. Click on Downloads
-. Click on RHEL
-. Scroll-down to Red Hat Enterprise Linux 9.6 (or latest) KVM Guest Image
-. Right click on "Download" and copy the URL
-. Go back to your bastion node and paste the URL into the following command:
+Download the latest Centos Stream 10 qcow2 that it will be used to deploy the conversion host:
 
 [source,bash,role=execute]
 ----
-curl -o rhel9.qcow2 "$URL_FROM_ACCESS_REDHAT_COM"
+curl -O -L https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2
 ----
 
 Copy the bastion public key to the openstackclient pod:
@@ -47,10 +42,10 @@ Copy the bastion public key to the openstackclient pod:
 oc cp /home/lab-user/.ssh/{guid}key.pub openstack/openstackclient:/home/cloud-admin/.
 ----
 
-Copy the RHEL 9 latest qcow image to the openstackclient pod:
+Copy the Centos Stream 10 qcow image to the openstackclient pod:
 [source,bash,role=execute]
 ----
-oc cp /home/lab-user/rhel9.qcow2 openstack/openstackclient:/home/cloud-admin/.
+oc cp /home/lab-user/CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2 openstack/openstackclient:/home/cloud-admin/.
 ----
 
 Access to the openstackclient pod
@@ -97,7 +92,7 @@ Create image and flavors
 ----
 openstack flavor create --ram 4096 --disk 35 --vcpu 2 --public migrate
 openstack keypair create --public-key ~/{guid}key.pub bastion_key
-openstack image create rhel-image --container-format bare --disk-format qcow2 --public --file rhel9.qcow2
+openstack image create centos10-image --container-format bare --disk-format qcow2 --public --file CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2
 ----
 
 Create the Server and a Floating IP
@@ -106,7 +101,7 @@ Create the Server and a Floating IP
 ----
 openstack server create \
     --flavor migrate --key-name bastion_key --network private --security-group basic \
-    --image rhel-image rhel-ch
+    --image centos10-image centos10-ch
 openstack floating ip create public --floating-ip-addres {rhoso_conversion_host_ip}
 ----
 
@@ -114,7 +109,7 @@ Add the floating IP above to the new VM in the next step.
 
 [source,bash,role=execute,subs=attributes]
 ----
-openstack server add floating ip rhel-ch {rhoso_conversion_host_ip}
+openstack server add floating ip centos10-ch {rhoso_conversion_host_ip}
 ----
 
 Make sure the VM is running.
@@ -131,7 +126,7 @@ openstack server list
 +--------------------------------------+-------------+--------+----------------------------------+----------------+---------+
 | ID                                   | Name        | Status | Networks                         | Image          | Flavor  |
 +--------------------------------------+-------------+--------+----------------------------------+----------------+---------+
-| b037521d-b583-4ac0-9906-73ad9c0624dd | rhel-ch | ACTIVE | private=10.0.0.252, {rhoso_conversion_host_ip} | rhel-image | migrate |
+| b037521d-b583-4ac0-9906-73ad9c0624dd | centos10-ch | ACTIVE | private=10.0.0.252, {rhoso_conversion_host_ip} | centos10-image | migrate |
 +--------------------------------------+-------------+--------+----------------------------------+----------------+---------+
 ----
 
@@ -149,14 +144,7 @@ From the bastion access to the VM.
 ssh -i /home/lab-user/.ssh/{guid}key.pem cloud-user@{rhoso_conversion_host_ip}
 ----
 
-Subscribe the RHEL VM using your RHN credentials
-
-[source,bash,role=execute,subs=attributes]
-----
-subscription-manager register --username <YOUR_RHN_USERNAME> --password <YOUR_RHN_PASSWORD>
-----
-
-Install the Vmware VIX rpm. By executing this command you accept the Broadcom VDDK license:
+Install the Vmware VIX rpm.
 
 [source,bash,role=execute]
 ----

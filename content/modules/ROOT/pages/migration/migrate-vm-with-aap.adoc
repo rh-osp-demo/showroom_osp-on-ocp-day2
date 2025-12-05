@@ -4,7 +4,7 @@
 
 === Creating Credentials
 
-1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Credentials*.
+1. From the navigation panel, go to *Automation Execution* → *Credentials*.
 2. Click *Create Credentials* and set the following parameters:
    * **Name:** Bastion key
    * **Credential Type:** Machine
@@ -56,19 +56,50 @@ Click *Create Host*.
 
 === Creating an Execution Environment
 
+==== If using internal AAP registry:
+
+===== Step 1: Access Automation Content
+
+. Log into your AAP web interface
+. Navigate to *Automation Content* → *Execution Environments*
+. You should see your pushed execution environment listed (e.g., `rhospvmt-ee`)
+
+===== Step 2: Use in Controller
+
+. Locate your execution environment in the list
+. Click the *three vertical dots* (⋮) menu next to your execution environment
+. Select *Use in Controller*
+. You will be redirected to the execution environment creation page with the following fields:
+  ** *Name*: VMware Migration toolkit execution environment
+  ** *Image*: This field is pre-filled with your pushed EE image path
+  ** *Description*: Optional description field
+. Click *Create Execution Environment* to complete the configuration
+
+===== Step 3: Verify Configuration
+
+After clicking "Create Execution Environment":
+
+. You will be automatically redirected to *Automation Execution* → *Infrastructure* → *Execution Environments*.
+. Verify your execution environment appears in the list with:
+  ** *Name*: VMware Migration toolkit execution environment
+  ** *Image*: Full registry path to your pushed image
+  ** *Status*: Should show as available
+
+==== If using OCP container registry:
+
 1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Execution Environments*.
 2. Click *Create Execution Environment* and set the following parameters:
-   * **Name:** vmware migration toolkit Execution Environment
-   * **Image:** `quay.io/os-migrate/vmware-migration-kit:stable`
+   * **Name:** VMware Migration toolkit execution environment
+   * **Image:** `default-route-openshift-image-registry.apps.cluster-{guid}.dynamic.redhatworkshops.io/aap/rhospvmt-ee:latest`
 3. Click *Create Execution Environment*.
+
 
 === Creating a Project
 
 1. From the navigation panel, go to *Automation Execution* → *Projects*.
 2. Click *Create Project* and set the following parameters:
    * **Name:** vmware migration toolkit project
-   * **Organization:** Default
-   * **Execution Environment:** vmware migration toolkit Execution Environment
+   * **Execution Environment:** VMware migration toolkit Execution Environment
    * **Source Control Type:** Git
    * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
 3. Click *Create Project*.
@@ -102,7 +133,7 @@ PROJECT_ID=$(openstack project list | grep ' admin ' | awk '{print $2}')
 AUTH_URL=$(openstack endpoint list --service identity --interface public -c URL -f value)
 ----
 
-Create the `os_migrate_for_aap.yaml` file:
+Create the `/home/lab-user/os-migrate-env/os_migrate_for_aap.yaml` file:
 
 [source,bash,role=execute,subs=attributes]
 ----
@@ -163,7 +194,7 @@ EOF
    * **Inventory:** Conversion Host Inventory
    * **Project:** vmware migration toolkit project
    * **Playbook:** `playbooks/migration.yml`
-   * **Execution Environment:** vmware migration toolkit Execution Environment
+   * **Execution Environment:** VMware Migration toolkit execution environment
    * **Credentials:** Bastion key
    * **Extra Variables:** Copy the content of `/home/lab-user/os-migrate-env/os_migrate_for_aap.yaml` from the bastion
 3. Click *Create Job Template*.

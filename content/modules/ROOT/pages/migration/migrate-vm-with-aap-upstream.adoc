@@ -1,10 +1,10 @@
-= Launch a VM Migration with Ansible Automation Platform 
+= Launch a VM Migration with Ansible Automation Platform using upstream execution environment
 
 == Configuring AAP to Launch a Migration
 
 === Creating Credentials
 
-1. From the navigation panel, go to *Automation Execution* → *Credentials*.
+1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Credentials*.
 2. Click *Create Credentials* and set the following parameters:
    * **Name:** Bastion key
    * **Credential Type:** Machine
@@ -23,19 +23,6 @@
 === Creating Hosts
 
 ==== Conversion Host
-
-1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Hosts*.
-2. Click *Create Host* and set the following parameters:
-   * **Name:** {rhoso_conversion_host_ip}
-   * **Inventory:** Conversion Host Inventory
-   * **Variables:**
-
-[source,bash,role=execute]
-----
-ansible_ssh_user: cloud-user
-----
-
-Click *Create Host*.
 
 1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Hosts*.
 2. Click *Create Host* and set the following parameters:
@@ -67,20 +54,21 @@ ansible_python_interpreter: '{{ ansible_playbook_python }}'
 
 Click *Create Host*.
 
-=== Checking the Execution Environment created in ansible-builder
+=== Creating an Execution Environment
 
 1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Execution Environments*.
-2. Verify your execution environment appears in the list with:
-   * **Name:** VMware Migration toolkit execution environment
-   * **Image:** Full registry path to your pushed image
-   * **Status**: Should show as available
+2. Click *Create Execution Environment* and set the following parameters:
+   * **Name:** vmware migration toolkit Execution Environment
+   * **Image:** `quay.io/os-migrate/vmware-migration-kit:stable`
+3. Click *Create Execution Environment*.
 
 === Creating a Project
 
 1. From the navigation panel, go to *Automation Execution* → *Projects*.
 2. Click *Create Project* and set the following parameters:
    * **Name:** vmware migration toolkit project
-   * **Execution Environment:** VMware Migration toolkit execution environment
+   * **Organization:** Default
+   * **Execution Environment:** vmware migration toolkit Execution Environment
    * **Source Control Type:** Git
    * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
 3. Click *Create Project*.
@@ -114,11 +102,11 @@ PROJECT_ID=$(openstack project list | grep ' admin ' | awk '{print $2}')
 AUTH_URL=$(openstack endpoint list --service identity --interface public -c URL -f value)
 ----
 
-Create the `os_migrate_vars.yaml` file:
+Create the `os_migrate_for_aap.yaml` file:
 
 [source,bash,role=execute,subs=attributes]
 ----
-cat << EOF > os_migrate_vars.yaml
+cat << EOF > /home/lab-user/os-migrate-env/os_migrate_for_aap.yaml
 os_migrate_tear_down: false
 # osm working directory:
 runner_from_aee: true
@@ -175,9 +163,9 @@ EOF
    * **Inventory:** Conversion Host Inventory
    * **Project:** vmware migration toolkit project
    * **Playbook:** `playbooks/migration.yml`
-   * **Execution Environment:** VMware Migration toolkit execution environment
+   * **Execution Environment:** vmware migration toolkit Execution Environment
    * **Credentials:** Bastion key
-   * **Extra Variables:** Copy the content of `/home/lab-user/os-migrate-env/os_migrate_for_awx.yaml` from the bastion
+   * **Extra Variables:** Copy the content of `/home/lab-user/os-migrate-env/os_migrate_for_aap.yaml` from the bastion
 3. Click *Create Job Template*.
 
 === Running the Migration
