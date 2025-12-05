@@ -10,7 +10,7 @@ You have four installation options:
 * xref:updates/updates.adoc[Install a previous version of RHOSO to update it to the latest]
 * xref:gitops/gitops.adoc[Install RHOSO using Gitops ArgoCD]
 
-Then if you want to go through a Vmware to RHOSO migration (Early Access):
+Then if you want to go through a Vmware to RHOSO migration:
 
 * xref:migration/migration.adoc[Vmware to RHOSO VM migration using Red Hat OpenStack Vmware Migration Toolkit] 
 
