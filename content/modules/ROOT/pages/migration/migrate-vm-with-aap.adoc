@@ -99,7 +99,6 @@ After clicking "Create Execution Environment":
 1. From the navigation panel, go to *Automation Execution* → *Projects*.
 2. Click *Create Project* and set the following parameters:
    * **Name:** vmware migration toolkit project
-   * **Execution Environment:** VMware migration toolkit Execution Environment
    * **Source Control Type:** Git
    * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
 3. Click *Create Project*.
