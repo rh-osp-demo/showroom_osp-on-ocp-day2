@@ -182,7 +182,7 @@ metadata:
   name: openstack-pre-adoption
 spec:
   nodeSets:
-  - compute
+  - compute2-3-set
   servicesOverride:
   - pre-adoption-validation
 EOF
