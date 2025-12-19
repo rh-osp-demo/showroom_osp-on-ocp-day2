@@ -161,36 +161,7 @@ To build the execution environment with a custom tag:
 ansible-builder build --tag rhospvmt-ee:latest
 ----
 
-=== Pushing to Container Registry
-
-First, push your execution environment to a container registry that your AAP can access:
-
-==== Push to AAP's Internal Registry
-
-In this lab, we will push the execution environment to the AAP's internal registry.
-
-[source,bash,role=execute,subs=attributes]
-----
-# Tag your current image for AAP internal registry
-podman tag localhost/rhospvmt-ee:latest \
-  aap-aap.apps.cluster-{guid}.dynamic.redhatworkshops.io/rhospvmt-ee:latest
-----
-
-Log in to the AAP's internal registry using the admin credentials and password: `{aap_controller_admin_password}` 
-
-[source,bash,role=execute,subs=attributes]
-----
-# Log in to AAP registry using admin credentials
-podman login aap-aap.apps.cluster-{guid}.dynamic.redhatworkshops.io -u admin -p {aap_controller_admin_password}
-----
-
-[source,bash,role=execute,subs=attributes]
-----
-# Push to registry
-podman push aap-aap.apps.cluster-{guid}.dynamic.redhatworkshops.io/rhospvmt-ee:latest
-----
-
-==== Push to OCP Container Registry
+=== Push to OCP Container Registry
 
 Another option is to push the execution environment to the OCP container registry.
 

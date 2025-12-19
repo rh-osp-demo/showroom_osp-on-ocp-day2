@@ -163,3 +163,5 @@ Install the Vmware VIX rpm. By executing this command you accept the Broadcom VD
 sudo dnf install -y https://repo.storware.eu/vprotect/current/el9/vmware-vix-disklib-8.0.0-20521017.el9.x86_64.rpm
 logout
 ----
+[NOTE]
+Do not do this on production environments. Download the VMware SDK library from the Broadcom website instead. Copy the VMware SDK library to the conversion host and install it in the default location /usr/lib/vmware-vix-disklib & ensure root:root ownership

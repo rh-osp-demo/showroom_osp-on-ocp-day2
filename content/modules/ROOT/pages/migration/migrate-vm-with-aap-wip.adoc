@@ -83,6 +83,7 @@ Click *Create Host*.
    * **Execution Environment:** VMware Migration toolkit execution environment
    * **Source Control Type:** Git
    * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
+   * **Source Control Branch/tag/commit:** `v2.1.0`
 3. Click *Create Project*.
 
 === Creating the Job Template
