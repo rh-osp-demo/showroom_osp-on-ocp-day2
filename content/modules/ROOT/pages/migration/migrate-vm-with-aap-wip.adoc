@@ -67,22 +67,23 @@ ansible_python_interpreter: '{{ ansible_playbook_python }}'
 
 Click *Create Host*.
 
-=== Creating an Execution Environment
+=== Checking the Execution Environment created in ansible-builder
 
 1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Execution Environments*.
-2. Click *Create Execution Environment* and set the following parameters:
-   * **Name:** vmware migration toolkit Execution Environment
-   * **Image:** `quay.io/os-migrate/vmware-migration-kit:stable`
-3. Click *Create Execution Environment*.
+2. Verify your execution environment appears in the list with:
+   * **Name:** VMware Migration toolkit execution environment
+   * **Image:** Full registry path to your pushed image
+   * **Status**: Should show as available
 
 === Creating a Project
 
 1. From the navigation panel, go to *Automation Execution* → *Projects*.
 2. Click *Create Project* and set the following parameters:
    * **Name:** vmware migration toolkit project
-   * **Execution Environment:** vmware migration toolkit Execution Environment
+   * **Execution Environment:** VMware Migration toolkit execution environment
    * **Source Control Type:** Git
    * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
+   * **Source Control Branch/tag/commit:** `v2.1.0`
 3. Click *Create Project*.
 
 === Creating the Job Template
@@ -175,7 +176,7 @@ EOF
    * **Inventory:** Conversion Host Inventory
    * **Project:** vmware migration toolkit project
    * **Playbook:** `playbooks/migration.yml`
-   * **Execution Environment:** vmware migration toolkit Execution Environment
+   * **Execution Environment:** VMware Migration toolkit execution environment
    * **Credentials:** Bastion key
    * **Extra Variables:** Copy the content of `/home/lab-user/os-migrate-env/os_migrate_for_awx.yaml` from the bastion
 3. Click *Create Job Template*.

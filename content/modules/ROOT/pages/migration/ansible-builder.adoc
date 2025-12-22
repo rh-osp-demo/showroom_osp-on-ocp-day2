@@ -4,9 +4,9 @@
 
 To install ansible-builder on the bastion host:
 
-[source,bash]
+[source,bash,role=execute,subs=attributes]
 ----
-dnf install ansible-builder
+sudo dnf install ansible-builder -y
 ----
 
 == Using Private Automation Hub
@@ -33,31 +33,6 @@ eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0NzQzYTkzMC03YmJiLTRkZGQtOTgz
 
 WARNING: Never share or expose your actual authentication tokens. The token above is a sample for reference only.
 
-=== Configuring Red Hat Automation Hub as the Primary Source for Content
-
-==== Creating the Credential
-
-. Navigate to your automation controller and create a new credential
-. Navigate to *Automation Execution* → *Infrastructure* → *Credentials*
-.. Click *Add*
-.. Enter the name for your new credential in the *Name* field
-.. _Optional:_ Enter a description and enter or select the name of the organization with which the credential is associated
-.. Under *Organization*, select the organization that you want to use the credential for
-.. Select *Ansible Galaxy/Automation Hub API Token* as the credential type
-.. Under *Type Details*, enter the Galaxy Server URL, Authentication Server URL, and API Token previously created
-.. Click *Save*
-.. Select the credential that you created from the Organization's Galaxy Credentials field
-
-==== Setting Up Organization Galaxy Credentials
-
-. Navigate to *Access Management* → *Organizations*
-.. Select the organization where you want to add your Galaxy credentials
-.. Click *Edit*
-.. Under *Galaxy Credentials*, click the *Search* icon
-.. Select the credential that you created for automation hub, and place it at the beginning of the list
-.. _Optional:_ If you have a secondary source of content, such as Ansible Galaxy, place this credential after the credential that you created for automation hub
-.. Click *Select*
-.. Click *Save*
 
 == Creating Execution Environments
 
@@ -69,7 +44,7 @@ https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.5
 In the bastion, create the main execution environment configuration file:
 
 .execution-environment.yml
-[source,yaml]
+[source,bash,role=execute,subs=attributes]
 ----
 cat << EOF > execution-environment.yml
 ---
@@ -77,7 +52,7 @@ version: 3
 
 images:
   base_image:
-    name: quay.io/centos/centos:stream10-minimal
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest
 
 options:
   package_manager_path: /usr/bin/microdnf
@@ -92,7 +67,7 @@ dependencies:
   galaxy: requirements.yml
   python_interpreter:
     package_system: "python3"
-    python_path: "/usr/bin/python3"
+    python_path: "/usr/bin/python3.11"
 additional_build_steps:
   prepend_base:
     - "RUN mkdir -p /etc/sudoers.d"
@@ -105,13 +80,12 @@ EOF
 In the bastion, create the Python dependencies file:
 
 .requirements.txt
-[source,text]
+[source,bash,role=execute,subs=attributes]
 ----
 cat << EOF > requirements.txt
 requests
 pyVim
 pyVmomi
-openstacksdk
 EOF
 ----
 
@@ -120,19 +94,16 @@ EOF
 In the bastion, create the Ansible collections requirements file:
 
 .requirements.yml
-[source,yaml]
+[source,bash,role=execute,subs=attributes]
 ----
 cat << EOF > requirements.yml
 collections:
-  - name: openstack.cloud
-    version: 2.2.0
-  - name: os_migrate.os_migrate
-    version: 1.0.1
-  - name: community.vmware
-    version: 4.5.0
-  - name: community.general
+  - name: vmware.vmware
+    version: 2.4.0
+  - name: vmware.vmware_rest
+    version: 4.9.0
   - name: os_migrate.vmware_migration_kit
-    version: ">1.0.0"
+    version: ">2.1.0"
 EOF
 ----
 
@@ -141,10 +112,9 @@ EOF
 In the bastion, create the system package dependencies file:
 
 .binddep.txt
-[source,text]
+[source,bash,role=execute,subs=attributes]
 ----
 cat << EOF > binddep.txt
-epel-release
 openssh-clients
 sshpass
 python3
@@ -157,23 +127,12 @@ git
 EOF
 ----
 
-== Configuring Ansible CLI for Private Hub
-
-=== Obtaining CLI Configuration
-
-In the Automation Platform interface:
-
-. Navigate to *Automation* → *Content* → *Repositories*
-. Select *rh-certified*
-. Click the three vertical dots menu
-. Select *Copy CLI configuration*
-
 === Creating ansible.cfg
 
 In the bastion, create the configuration file:
 
 .ansible.cfg (Public Hub)
-[source,ini]
+[source,ini,role=execute,subs=attributes]
 ----
 cat << EOF > ansible.cfg
 [galaxy]
@@ -186,102 +145,64 @@ token=<your_console_redhat_com_token>
 EOF
 ----
 
+== Authenticate to registry.redhat.io
+
+[source,bash,role=execute,subs=attributes]
+----
+podman login registry.redhat.io
+----
+
 == Building the Execution Environment
-
-Once all configuration files are created, you can build your execution environment using ansible-builder.
-
-IMPORTANT: Before building, ensure your `ansible.cfg` contains the correct AAP instance token (not the console.redhat.com token).
-
-=== Authentication Setup for Build
-
-For authenticated collection downloads during build, ensure your token is properly configured:
-
-[source,bash]
-----
-# Verify your ansible.cfg has the correct token
-cat ansible.cfg
-
-# Test authentication before building
-ansible-galaxy collection list --server rh-certified
-----
-
-=== Basic Build Command
 
 To build the execution environment with a custom tag:
 
-[source,bash]
+[source,bash,role=execute,subs=attributes]
 ----
 ansible-builder build --tag rhospvmt-ee:latest
 ----
 
-=== Verbose Build Output
+=== Push to OCP Container Registry
 
-For detailed build information and troubleshooting:
+Another option is to push the execution environment to the OCP container registry.
 
-[source,bash]
+Ensure the default route is enabled and accessible.
+[source,bash,role=execute,subs=attributes]
 ----
-ansible-builder build --tag rhospvmt-ee:latest --verbosity 2
-----
-
-=== Build with Custom Dockerfile Output
-
-To save the generated Dockerfile for inspection:
-
-[source,bash]
-----
-ansible-builder build --tag rhospvmt-ee:latest --build-outputs-dir ./build-outputs
+oc patch configs.imageregistry.operator.openshift.io/cluster \
+  --type merge -p '{"spec":{"defaultRoute":true}}'
 ----
 
-=== Pushing to Container Registry
-
-First, push your execution environment to a container registry that your AAP can access:
-
-==== Push to AAP's Internal Registry
-
-If your AAP has an internal container registry:
-
-[source,bash]
+Get the default route hostname
+[source,bash,role=execute,subs=attributes]
 ----
-# Tag your current image for AAP internal registry
-podman tag localhost/rhospvmt-ee:latest \
-  aap-for-rhoso-migrations-ansible-automation-platform.apps.cluster-{guid}.dynamic.redhatworkshops.io/rhospvmt-ee:latest
-
-# Log in to AAP registry using admin credentials
-podman login aap-for-rhoso-migrations-ansible-automation-platform.apps.cluster-{guid}.dynamic.redhatworkshops.io -u admin
-
-# Push to registry
-podman push aap-for-rhoso-migrations-ansible-automation-platform.apps.cluster-{guid}.dynamic.redhatworkshops.io/rhospvmt-ee:latest
+REG_ROUTE=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}')
+PROJECT=aap
 ----
 
-=== Using AAP UI to Create Execution Environment
+In the OpenShift web console: click your username (top right) → Copy login command → Display Token → copy the oc login command. Paste the command into the bastion and execute it.
 
-After pushing your execution environment to the AAP registry, you can easily configure it for use in the controller through the AAP web interface.
+Podman login to the OCP container registry:
+[source,bash,role=execute,subs=attributes]
+----
+podman login $REG_ROUTE \
+  -u $(oc whoami) \
+  -p $(oc whoami -t)
+----
 
-==== Step 1: Access Automation Content
+Tag the execution environment:
+[source,bash,role=execute,subs=attributes]
+----
+podman tag rhospvmt-ee:latest $REG_ROUTE/$PROJECT/rhospvmt-ee:latest
+----
 
-. Log into your AAP web interface
-. Navigate to *Automation Content* → *Execution Environments*
-. You should see your pushed execution environment listed (e.g., `rhospvmt-ee`)
+Push the execution environment to the OCP container registry:
+[source,bash,role=execute,subs=attributes]
+----
+podman push --tls-verify=false $REG_ROUTE/$PROJECT/rhospvmt-ee:latest
+----
 
-==== Step 2: Use in Controller
-
-. Locate your execution environment in the list
-. Click the *three vertical dots* (⋮) menu next to your execution environment
-. Select *Use in Controller*
-. You will be redirected to the execution environment creation page with the following fields:
-  ** *Name*: Enter a descriptive name for your execution environment (e.g., `VMware Migration EE`)
-  ** *Image*: This field is pre-filled with your pushed EE image path
-  ** *Description*: Optional description field
-. Click *Create Execution Environment* to complete the configuration
-
-==== Step 3: Verify Configuration
-
-After clicking "Create Execution Environment":
-
-. You will be automatically redirected to *Administration* → *Execution Environments*
-. Verify your execution environment appears in the list with:
-  ** *Name*: The name you entered in the popup (e.g., `VMware Migration EE`)
-  ** *Image*: Full registry path to your pushed image
-  ** *Status*: Should show as available
-
-The execution environment is now available in the AAP controller and can be used to run migration playbooks.
+Your execution environment URL is:
+[source,bash,role=execute,subs=attributes]
+----
+default-route-openshift-image-registry.apps.cluster-{guid}.dynamic.redhatworkshops.io/aap/rhospvmt-ee:latest
+----
