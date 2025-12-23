@@ -349,7 +349,7 @@ show_usage() {
     echo "  install-operators - Install OpenStack operators"
     echo "  security      - Configure secrets and security"
     echo "  nfs-server    - Configure NFS server"
-    echo "  deploy-rhosp   - Deploy RHOSP 17.1 standalone environment (for adoption)"
+    echo "  deploy-rhosp  - Deploy RHOSP 17.1 standalone environment (for adoption)"
     echo "  network-isolation - Set up network isolation"
     echo "  control-plane - Deploy OpenStack control plane"
     echo "  data-plane    - Configure compute nodes"
