@@ -34,6 +34,7 @@
   vars_files:
     - vars/main.yml
   roles:
+    - prerequisites
     - nfs-server
   tags:
     - nfs-server
