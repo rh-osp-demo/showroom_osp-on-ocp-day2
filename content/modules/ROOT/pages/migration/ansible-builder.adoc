@@ -63,7 +63,7 @@ dependencies:
   ansible_core:
     package_pip: ansible-core
   python: requirements.txt
-  system: binddep.txt
+  system: bindep.txt
   galaxy: requirements.yml
   python_interpreter:
     package_system: "python3"
@@ -72,8 +72,11 @@ additional_build_steps:
   prepend_base:
     - "RUN mkdir -p /etc/sudoers.d"
     - "RUN echo 'cloud-user ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/cloud-user"
+    - "RUN curl -sLo /tmp/epel-release.rpm https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && rpm -ivh /tmp/epel-release.rpm && rm -f /tmp/epel-release.rpm"
 EOF
 ----
+
+WARNING: The epel-release package is not available in the base image. It is added to the execution environment to provide access to the epel repository as a workaround to avoid the error in this bug: https://issues.redhat.com/browse/OSPRH-25458
 
 === Python Requirements
 
@@ -111,10 +114,10 @@ EOF
 
 In the bastion, create the system package dependencies file:
 
-.binddep.txt
+.bindep.txt
 [source,bash,role=execute,subs=attributes]
 ----
-cat << EOF > binddep.txt
+cat << EOF > bindep.txt
 openssh-clients
 sshpass
 python3
