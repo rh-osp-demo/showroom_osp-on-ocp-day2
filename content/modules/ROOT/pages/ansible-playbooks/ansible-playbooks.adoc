@@ -58,6 +58,7 @@ all:
   vars:
     # REQUIRED: Lab Environment Configuration
     lab_guid: "{guid}"                                 # Replace with your actual lab GUID
+    bastion_user: "lab-user"                             # User account on bastion host
     
     # REQUIRED: Red Hat Customer Portal Credentials  
     # Your login credentials for https://access.redhat.com
