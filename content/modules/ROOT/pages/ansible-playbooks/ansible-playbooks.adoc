@@ -81,8 +81,8 @@ all:
     rhoso_external_ip_worker_2: "{rhoso_external_ip_worker_2}"        # External IP for worker node 2
     rhoso_external_ip_worker_3: "{rhoso_external_ip_worker_3}"        # External IP for worker node 3
 
-    rhoso_public_net_start: {rhoso_public_net_start}" 
-    rhoso_public_net_end: {rhoso_public_net_end}"
+    rhoso_public_net_start: "{rhoso_public_net_start}" 
+    rhoso_public_net_end: "{rhoso_public_net_end}"
     rhoso_conversion_host_ip: "{rhoso_conversion_host_ip}"
     
     # OPTIONAL: Network configuration (usually defaults work)
