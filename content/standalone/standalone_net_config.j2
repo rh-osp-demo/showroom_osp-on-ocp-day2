@@ -25,11 +25,9 @@ network_config:
   name: br-ex
   mtu: 1500
   use_dhcp: false
-  addresses:
-  - ip_netmask: 172.21.0.15/24
   members:
   - type: interface
-    name: eth5
+    name: eth6
     mtu: 1500
     # force the MAC address of the bridge to this interface
     primary: true

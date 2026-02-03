@@ -6,6 +6,7 @@ all:
   vars:
     # REQUIRED: Lab Environment Configuration
     lab_guid: "changeme"                                 # Replace with your actual lab GUID
+    bastion_user: "lab-user"                             # User account on bastion host
     
     # REQUIRED: Red Hat Registry Service Account Credentials
     # Get these from: https://access.redhat.com/articles/RegistryAuthentication#creating-registry-service-accounts-6
@@ -19,16 +20,23 @@ all:
     
     # OPTIONAL: Internal lab hostnames (usually defaults work)
     nfs_server_hostname: "nfsserver"                  # Internal NFS server hostname
+    standalone_hostname: "allinone"                   # Internal hostname for standalone controller
     compute_hostname: "compute01"                     # Internal compute node hostname
+    compute_hostname_02: "compute02"                  # Internal hostname for compute node 2
+    compute_hostname_03: "compute03"                  # Internal hostname for compute node 3
     
     # OPTIONAL: External IP configuration for OpenShift worker nodes
     # These IPs are used to configure the external network interfaces on OCP worker nodes
-    rhoso_external_ip_worker_1: "172.21.0.21"        # External IP for worker node 1
-    rhoso_external_ip_worker_2: "172.21.0.22"        # External IP for worker node 2
-    rhoso_external_ip_worker_3: "172.21.0.23"        # External IP for worker node 3
+    rhoso_external_ip_worker_1: "192.168.10.16"        # External IP for worker node 1
+    rhoso_external_ip_worker_2: "192.168.10.17"        # External IP for worker node 2
+    rhoso_external_ip_worker_3: "192.168.10.18"        # External IP for worker node 3
+
+    rhoso_public_net_start: "192.168.0.20" 
+    rhoso_public_net_end: "192.168.0.31"
+    rhoso_conversion_host_ip: "192.168.10.26"
     
     # OPTIONAL: Network configuration (usually defaults work)
-    rhoso_external_ip_bastion: "172.21.0.50"         # External IP for bastion
+    rhoso_external_ip_bastion: "192.168.10.19"         # External IP for bastion
 
 # Bastion host (localhost when running directly from bastion)
 bastion:
@@ -44,7 +52,16 @@ nfsserver:
       ansible_host: "{{ nfs_server_hostname }}"
       ansible_user: "cloud-user"
       # ansible_python_interpreter: /usr/bin/python3  # Optional: Let Ansible auto-detect Python (works with Python 2.7+ or 3.x)
-      ansible_ssh_private_key_file: "/home/lab-user/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# Standalone controller (all-in-one) operations (direct SSH from bastion)
+standalone:
+  hosts:
+    allinone:
+      ansible_host: "{{ standalone_hostname }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
       ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 # Compute node operations (direct SSH from bastion)  
@@ -54,5 +71,15 @@ compute_nodes:
       ansible_host: "{{ compute_hostname }}"
       ansible_user: "cloud-user"
       # ansible_python_interpreter: /usr/bin/python3  # Optional: Let Ansible auto-detect Python (works with Python 2.7+ or 3.x)
-      ansible_ssh_private_key_file: "/home/lab-user/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+    compute02:
+      ansible_host: "{{ compute_hostname_02 }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+    compute03:
+      ansible_host: "{{ compute_hostname_03 }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/{{ bastion_user }}/.ssh/{{ lab_guid }}key.pem"
       ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"

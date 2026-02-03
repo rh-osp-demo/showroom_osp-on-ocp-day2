@@ -54,7 +54,6 @@
     - { interface: 2, ip: "172.17.0.15" }
     - { interface: 3, ip: "172.18.0.15" }
     - { interface: 4, ip: "172.19.0.15" }
-    - { interface: 5, ip: "172.21.0.15" }
   delegate_to: allinone
   become: true
 
@@ -90,7 +89,6 @@
     - { interface: 2, ip: "172.17.0.110" }
     - { interface: 3, ip: "172.18.0.110" }
     - { interface: 4, ip: "172.19.0.110" }
-    - { interface: 5, ip: "172.21.0.110" }
   delegate_to: compute02
   become: true
 
@@ -126,7 +124,6 @@
     - { interface: 2, ip: "172.17.0.112" }
     - { interface: 3, ip: "172.18.0.112" }
     - { interface: 4, ip: "172.19.0.112" }
-    - { interface: 5, ip: "172.21.0.112" }
   delegate_to: compute03
   become: true
 
@@ -581,7 +578,7 @@
 - name: Create floating IP for compute02 server
   tags: [standalone, workloads]
   ansible.builtin.command: |
-    openstack floating ip create public --floating-ip-address 172.21.0.204
+    openstack floating ip create public --floating-ip-address {{ rhoso_public_net_start | ansible.utils.ipmath(2) }}
   delegate_to: allinone
   become_user: cloud-user
   environment:
@@ -605,7 +602,7 @@
 - name: Create floating IP for compute03 server
   tags: [standalone, workloads]
   ansible.builtin.command: |
-    openstack floating ip create public --floating-ip-address 172.21.0.205
+    openstack floating ip create public --floating-ip-address {{ rhoso_public_net_start | ansible.utils.ipmath(3) }}
   delegate_to: allinone
   become_user: cloud-user
   environment:
@@ -615,7 +612,7 @@
 - name: Associate floating IP to compute02 server
   tags: [standalone, workloads]
   ansible.builtin.command: |
-    openstack server add floating ip test-server-compute-02 172.21.0.204
+    openstack server add floating ip test-server-compute-02 {{ rhoso_public_net_start | ansible.utils.ipmath(2) }}
   delegate_to: allinone
   become_user: cloud-user
   environment:
@@ -625,7 +622,7 @@
 - name: Associate floating IP to compute03 server
   tags: [standalone, workloads]
   ansible.builtin.command: |
-    openstack server add floating ip test-server-compute-03 172.21.0.205
+    openstack server add floating ip test-server-compute-03 {{ rhoso_public_net_start | ansible.utils.ipmath(3) }}
   delegate_to: allinone
   become_user: cloud-user
   environment:
