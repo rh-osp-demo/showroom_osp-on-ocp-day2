@@ -43,6 +43,7 @@ Available phases:
   install-operators - Install OpenStack operators
   security      - Configure secrets and security
   nfs-server    - Configure NFS server
+  deploy-rhosp   - Deploy RHOSP 17.1 standalone environment (for adoption)
   network-isolation - Set up network isolation
   control-plane - Deploy OpenStack control plane
   data-plane    - Configure compute nodes
