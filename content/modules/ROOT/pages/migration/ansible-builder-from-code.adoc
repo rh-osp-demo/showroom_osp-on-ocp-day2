@@ -1,0 +1,145 @@
+= Build Red Hat OpenStack VMware Migration Toolkit Execution Environment with Ansible Builder from Code
+
+== Installation on Bastion Host
+
+To install ansible-builder on the bastion host:
+
+[source,bash,role=execute,subs=attributes]
+----
+sudo dnf install ansible-builder -y
+----
+
+== Clone the RH OpenStack VMware Migration Toolkit repository
+
+[source,bash,role=execute,subs=attributes]
+----
+git clone https://github.com/ansible/vmware-migration-toolkit.git
+----
+
+Navigate to the repository:
+
+[source,bash,role=execute,subs=attributes]
+----
+cd vmware-migration-toolkit
+----
+
+Checkout the Heat functionality branch:
+
+[source,bash,role=execute,subs=attributes]
+----
+git fetch origin pull/206/head:pr-206
+git checkout pr-206
+----
+
+Make build the binaries:
+
+[source,bash,role=execute,subs=attributes]
+----
+make build
+----
+
+== Creating Execution Environments
+
+For detailed information on creating and using execution environments, see:
+https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.5/html/creating_and_using_execution_environments/assembly-using-builder
+
+=== Execution Environment Configuration
+
+In the bastion, create the main execution environment configuration file:
+
+.execution-environment.yml
+[source,bash,role=execute,subs=attributes]
+----
+cat << EOF > execution-environment.yml
+---
+version: 3
+
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+dependencies:
+  ansible_runner:
+    package_pip: ansible-runner
+  ansible_core:
+    package_pip: ansible-core
+  python: requirements.txt
+  system: bindep.txt
+  galaxy: requirements.yml
+  python_interpreter:
+    package_system: "python3"
+    python_path: "/usr/bin/python3.11"
+additional_build_files:
+  - src: /home/lab-user/vmware-migration-kit/os_migrate-vmware_migration_kit-2.2.1.tar.gz
+    dest: tmp/
+additional_build_steps:
+  prepend_base:
+    - "RUN mkdir -p /etc/sudoers.d"
+    - "RUN echo 'cloud-user ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/cloud-user"
+EOF
+----
+
+=== Python Requirements
+
+In the bastion, create the Python dependencies file:
+
+.requirements.txt
+[source,bash,role=execute,subs=attributes]
+----
+cat << EOF > requirements.txt
+requests
+pyVim
+pyVmomi
+EOF
+----
+
+=== Ansible Collections Requirements
+
+In the bastion, create the Ansible collections requirements file:
+
+.requirements.yml
+[source,bash,role=execute,subs=attributes]
+----
+cat << EOF > requirements.yml
+collections:
+  - name: vmware.vmware
+    version: 2.4.0
+  - name: vmware.vmware_rest
+    version: 4.9.0
+  - name: os_migrate.vmware_migration_kit
+    type: file
+    source: tmp/os_migrate-vmware_migration_kit-2.2.1.tar.gz
+EOF
+----
+
+=== System Dependencies
+
+In the bastion, create the system package dependencies file:
+
+.bindep.txt
+[source,bash,role=execute,subs=attributes]
+----
+cat << EOF > bindep.txt
+openssh-clients
+python3
+EOF
+----
+
+== Authenticate to registry.redhat.io
+
+[source,bash,role=execute,subs=attributes]
+----
+podman login registry.redhat.io
+----
+
+== Building the Execution Environment
+
+To build the execution environment with a custom tag:
+
+[source,bash,role=execute,subs=attributes]
+----
+sudo ansible-builder build --tag rhospvmt-ee:latest
+----

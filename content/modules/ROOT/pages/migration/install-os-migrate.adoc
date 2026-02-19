@@ -1,4 +1,4 @@
-= Install the os-migrate vmware migration kit collection and execute a VM migration from CLI
+= Execute a migration from CLI using the RH OpenStack Vmware Migration Toolkit collection
 
 == Configure os-migrate vmware migration kit
 
@@ -53,7 +53,7 @@ Create the os_migrate_vars.yamls file:
 [source,bash,role=execute,subs=attributes]
 ----
 cat << EOF > /home/lab-user/os-migrate-env/os_migrate_vars_demo_redhat_com.yaml
-runner_from_aee: false
+runner_from_aee: true
 # osm working directory:
 os_migrate_vmw_data_dir: /tmp/os-migrate
 copy_openstack_credentials_to_conv_host: false
@@ -75,6 +75,8 @@ used_mapped_networks: false
 
 # Use for settings rhel network device:
 os_migrate_configure_network: true
+
+use_heat: true
 
 os_migrate_tear_down: false
 
@@ -135,7 +137,7 @@ In the bastion, launch the migration:
 [source,bash,role=execute,subs=attributes]
 ----
 sudo podman secret create conv-key /home/lab-user/.ssh/{guid}key.pem
-sudo podman run --network host -it -v $PWD/os-migrate-env:/runner/env:z --env ANSIBLE_CALLBACKS_ENABLED=profile_tasks --secret conv-key,target=/runner/key,mode=0600,type=mount --user root quay.io/os-migrate/vmware-migration-kit:stable ansible-playbook -i /runner/env/inventory.yaml os_migrate.vmware_migration_kit.migration -e @/runner/env/os_migrate_vars_demo_redhat_com.yaml -e @/runner/env/secrets_demo_redhat_com.yaml
+sudo podman run --network host -it -v $PWD/os-migrate-env:/runner/env:z --env ANSIBLE_CALLBACKS_ENABLED=profile_tasks --secret conv-key,target=/runner/key,mode=0600,type=mount --user root localhost/rhospvmt-ee:latest ansible-playbook -i /runner/env/inventory.yaml os_migrate.vmware_migration_kit.migration -e @/runner/env/os_migrate_vars_demo_redhat_com.yaml -e @/runner/env/secrets_demo_redhat_com.yaml
 ----
 
 Check that the VM has been migrated:
@@ -200,19 +202,15 @@ openstack server add floating ip haproxy-{guid} $FLOATING_IP_HA_PROXY
 +--------------------------------------+---------------+--------+-----------------------------------------+--------------------------+--------------------------+
 ----
 
-Ping the migrated VM:
-
-[source,bash]
-----
-ping $FLOATING_IP
-PING $FLOATING_IP (FLOATING_IP) 56(84) bytes of data.
-64 bytes from $FLOATING_IP: icmp_seq=1 ttl=63 time=1.41 ms
-64 bytes from $FLOATING_IP: icmp_seq=2 ttl=63 time=0.792 ms
-----
-
-Delete the virtual machine, before moving the next chapter.
+Check the heat stack imported:
 
 [source,bash,role=execute,subs=attributes]
 ----
-openstack server delete haproxy-{guid}
+openstack stack list
+----
+
+. Sample Output
+
+[source,bash,subs=attributes]
+----
 ----
