@@ -40,10 +40,11 @@
         python_interpreter:
           package_system: "python3"
           python_path: "/usr/bin/python3.11"
-      additional_build_steps:
-        prepend_base:
-          - "RUN mkdir -p /etc/sudoers.d"
-          - "RUN echo 'cloud-user ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/cloud-user"
+        additional_build_steps:
+          prepend_base:
+            - "RUN mkdir -p /etc/sudoers.d"
+            - "RUN echo 'cloud-user ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/cloud-user"
+            - "RUN curl -sLo /tmp/epel-release.rpm https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && rpm -ivh /tmp/epel-release.rpm && rm -f /tmp/epel-release.rpm"
 
 - name: Create requirements.txt for Python dependencies
   ansible.builtin.copy:
@@ -72,7 +73,6 @@
     dest: "{{ ansible_env.HOME }}/{{ ansible_builder_work_dir }}/bindep.txt"
     mode: '0644'
     content: |
-      epel-release
       openssh-clients
       python3
 
