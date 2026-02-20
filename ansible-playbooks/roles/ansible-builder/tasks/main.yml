@@ -162,12 +162,34 @@
     - aap_admin_secret.resources | length > 0
 
 - name: Authenticate to AAP internal registry
-  ansible.builtin.command:
-    cmd: podman login {{ aap_hub_registry_url }} -u admin -p {{ aap_registry_password }}
-  when: 
+  ansible.builtin.shell: podman login {{ aap_hub_registry_url }} -u admin -p "$REGISTRY_PASSWORD" --tls-verify=false
+  environment:
+    REGISTRY_PASSWORD: "{{ aap_registry_password }}"
+  register: podman_login_result
+  when:
     - push_to_aap_registry | default(true)
     - aap_registry_password is defined
-  no_log: true
+  failed_when: false
+  changed_when: false
+
+- name: Show podman login output (stdout and stderr)
+  ansible.builtin.debug:
+    msg:
+      - "Registry: {{ aap_hub_registry_url }}"
+      - "Return code: {{ podman_login_result.rc | default('N/A') }}"
+      - "stdout: {{ podman_login_result.stdout | default('') }}"
+      - "stderr: {{ podman_login_result.stderr | default('') }}"
+  when:
+    - push_to_aap_registry | default(true)
+    - podman_login_result is defined
+
+- name: Fail if podman login did not succeed
+  ansible.builtin.fail:
+    msg: "podman login to {{ aap_hub_registry_url }} failed. See 'Show podman login output' task above for stdout/stderr."
+  when:
+    - push_to_aap_registry | default(true)
+    - podman_login_result is defined
+    - podman_login_result.rc | default(-1) != 0
 
 - name: Fail if AAP registry password not found
   ansible.builtin.fail:
