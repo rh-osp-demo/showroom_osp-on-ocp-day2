@@ -145,21 +145,23 @@
       {{ aap_hub_registry_url }}/{{ ee_image_name }}:{{ ee_image_tag }}
   when: push_to_aap_registry | default(true)
 
-- name: Get AAP admin password for registry authentication
+# Hub registry requires the Hub admin password (not the Controller password)
+- name: Get Hub admin password for registry authentication
   kubernetes.core.k8s_info:
     api_version: v1
     kind: Secret
-    name: "{{ aap_instance_name }}-admin-password"
+    name: "{{ aap_instance_name }}-hub-admin-password"
     namespace: "{{ aap_namespace }}"
-  register: aap_admin_secret
+  register: aap_hub_admin_secret
   when: push_to_aap_registry | default(true)
 
-- name: Decode AAP admin password
+- name: Set registry password from Hub admin secret
   set_fact:
-    aap_registry_password: "{{ aap_admin_secret.resources[0].data.password | b64decode }}"
-  when: 
+    aap_registry_password: "{{ aap_hub_admin_secret.resources[0].data.password | b64decode }}"
+  when:
     - push_to_aap_registry | default(true)
-    - aap_admin_secret.resources | length > 0
+    - aap_hub_admin_secret.resources is defined
+    - aap_hub_admin_secret.resources | length > 0
 
 - name: Authenticate to AAP internal registry
   ansible.builtin.shell: podman login {{ aap_hub_registry_url }} -u admin -p "$REGISTRY_PASSWORD" --tls-verify=false
@@ -191,19 +193,18 @@
     - podman_login_result is defined
     - podman_login_result.rc | default(-1) != 0
 
-- name: Fail if AAP registry password not found
+- name: Fail if Hub admin password not found
   ansible.builtin.fail:
     msg: |
-      Could not retrieve AAP admin password from secret '{{ aap_instance_name }}-admin-password' 
-      in namespace '{{ aap_namespace }}'. 
-      
+      Could not retrieve Hub admin password from secret '{{ aap_instance_name }}-hub-admin-password'
+      in namespace '{{ aap_namespace }}'. The Hub registry requires the Hub admin password, not the Controller.
+
       Please verify:
-      1. AAP is deployed and running in the '{{ aap_namespace }}' namespace
-      2. The secret '{{ aap_instance_name }}-admin-password' exists
+      1. AAP and Automation Hub are deployed and running in '{{ aap_namespace }}'
+      2. The secret '{{ aap_instance_name }}-hub-admin-password' exists
       3. You have access to the OpenShift cluster (run 'oc whoami' to verify)
-      
-      To check the secret exists, run:
-        oc get secret {{ aap_instance_name }}-admin-password -n {{ aap_namespace }}
+
+      To check the secret: oc get secret {{ aap_instance_name }}-hub-admin-password -n {{ aap_namespace }}
   when:
     - push_to_aap_registry | default(true)
     - aap_registry_password is not defined
