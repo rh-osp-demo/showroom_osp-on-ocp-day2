@@ -114,44 +114,35 @@
   debug:
     msg: "{{ ansible_builder_output.stdout_lines }}"
 
-- name: Get AAP routes
+- name: Get AAP Hub route for registry
   kubernetes.core.k8s_info:
     api_version: route.openshift.io/v1
     kind: Route
     namespace: "{{ aap_namespace }}"
-  register: aap_routes
+  register: aap_hub_route
   when: push_to_aap_registry | default(true)
 
-# Use Automation Hub route for container registry (main 'aap' route is web/API only, returns 405 for pushes)
-- name: Extract AAP Hub registry route host
+- name: Extract AAP Hub registry URL
   set_fact:
-    aap_registry_host: "{{ item.spec.host }}"
-  when:
+    aap_hub_registry_url: "{{ item.spec.host }}"
+  when: 
     - push_to_aap_registry | default(true)
     - "'hub' in item.metadata.name"
-    - "'hub-web-svc' in item.spec.to.name | default('')"
-  loop: "{{ aap_routes.resources }}"
+    - "'hub-web-svc' in item.spec.to.name"
+  loop: "{{ aap_hub_route.resources }}"
   loop_control:
     label: "{{ item.metadata.name }}"
 
-- name: Fallback to first hub-named route if hub-web-svc not found
-  set_fact:
-    aap_registry_host: "{{ (aap_routes.resources | selectattr('metadata.name', 'search', 'hub') | list | first).spec.host }}"
-  when:
-    - push_to_aap_registry | default(true)
-    - aap_registry_host is not defined or aap_registry_host == ""
-    - (aap_routes.resources | selectattr('metadata.name', 'search', 'hub') | list | length) > 0
-
-- name: Display AAP registry host
+- name: Display AAP Hub registry URL
   debug:
-    msg: "AAP Registry (Hub) host: {{ aap_registry_host }}"
+    msg: "AAP Hub Registry URL: {{ aap_hub_registry_url }}"
   when: push_to_aap_registry | default(true)
 
 - name: Tag execution environment for AAP internal registry
   ansible.builtin.command:
     cmd: >
       podman tag localhost/{{ ee_image_name }}:{{ ee_image_tag }}
-      {{ aap_registry_host }}/{{ ee_image_name }}:{{ ee_image_tag }}
+      {{ aap_hub_registry_url }}/{{ ee_image_name }}:{{ ee_image_tag }}
   when: push_to_aap_registry | default(true)
 
 - name: Get AAP admin password for registry authentication
@@ -170,36 +161,34 @@
     - push_to_aap_registry | default(true)
     - aap_admin_secret.resources | length > 0
 
-- name: Authenticate to AAP internal registry (Hub)
+- name: Authenticate to AAP internal registry
   ansible.builtin.command:
-    cmd: podman login {{ aap_registry_host }} -u admin -p {{ aap_registry_password }}
+    cmd: podman login {{ aap_hub_registry_url }} -u admin -p {{ aap_registry_password }}
   when: 
     - push_to_aap_registry | default(true)
     - aap_registry_password is defined
-    - aap_registry_host is defined
   no_log: true
 
-- name: Fail if AAP registry password or Hub route not found
+- name: Fail if AAP registry password not found
   ansible.builtin.fail:
     msg: |
-      Could not retrieve AAP admin password from secret '{{ aap_instance_name }}-admin-password'
-      or could not find AAP Automation Hub route for the container registry
-      in namespace '{{ aap_namespace }}'.
-
+      Could not retrieve AAP admin password from secret '{{ aap_instance_name }}-admin-password' 
+      in namespace '{{ aap_namespace }}'. 
+      
       Please verify:
-      1. AAP and Automation Hub are deployed and running in '{{ aap_namespace }}'
+      1. AAP is deployed and running in the '{{ aap_namespace }}' namespace
       2. The secret '{{ aap_instance_name }}-admin-password' exists
-      3. A route with 'hub' in the name exists: oc get routes -n {{ aap_namespace }}
-      4. You have access to the OpenShift cluster (run 'oc whoami' to verify)
-
-      To list routes: oc get routes -n {{ aap_namespace }}
+      3. You have access to the OpenShift cluster (run 'oc whoami' to verify)
+      
+      To check the secret exists, run:
+        oc get secret {{ aap_instance_name }}-admin-password -n {{ aap_namespace }}
   when:
     - push_to_aap_registry | default(true)
-    - aap_registry_password is not defined or aap_registry_host is not defined or aap_registry_host == ""
+    - aap_registry_password is not defined
 
-- name: Push execution environment to AAP internal registry (Hub)
+- name: Push execution environment to AAP internal registry
   ansible.builtin.command:
-    cmd: podman push {{ aap_registry_host }}/{{ ee_image_name }}:{{ ee_image_tag }}
+    cmd: podman push {{ aap_hub_registry_url }}/{{ ee_image_name }}:{{ ee_image_tag }}
   when: push_to_aap_registry | default(true)
   register: push_output
 
@@ -210,7 +199,8 @@
       Execution Environment Build Complete!
       ========================================
       Image: {{ ee_image_name }}:{{ ee_image_tag }}
-      Registry: {{ aap_registry_host }}
-      Full Image URL: {{ aap_registry_host }}/{{ ee_image_name }}:{{ ee_image_tag }}
+      Registry: {{ aap_hub_registry_url }}
+      Full Image URL: {{ aap_hub_registry_url }}/{{ ee_image_name }}:{{ ee_image_tag }}
       ========================================
   when: push_to_aap_registry | default(true)
+
