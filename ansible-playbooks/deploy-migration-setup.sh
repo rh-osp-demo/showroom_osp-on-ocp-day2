@@ -35,13 +35,12 @@ Deployment Modes (default: --full):
                           Use this if you only want to deploy prerequisites
   
   --full                  Deploy prerequisites + AAP + execution environment (DEFAULT)
-                          NOTE: Stops BEFORE configuring AAP for migration
-                          You must upload AAP license manually, then run --configure-aap
+                          Stops before configuring AAP for migration; then run --configure-aap
   
   --skip-prereqs          Deploy AAP and EE ONLY (skip conversion host)
                           Use this if conversion host is already deployed
   
-  --configure-aap         Configure AAP for migration (run AFTER uploading license)
+  --configure-aap         Configure AAP for migration
                           Creates credentials, inventory, hosts, project, and job template
 
 Optional Arguments:
@@ -61,7 +60,7 @@ Examples:
   # Deploy AAP and EE ONLY (skip prereqs if already deployed)
   $0 --inventory inventory/hosts-abc123.yml --credentials credentials.yml --skip-prereqs
 
-  # Configure AAP for migration (AFTER uploading license via AAP UI)
+  # Configure AAP for migration
   $0 --inventory inventory/hosts-abc123.yml --credentials credentials.yml --configure-aap
 
   # Install only AAP (conversion host must exist)
@@ -74,12 +73,10 @@ Workflow:
   1. Deploy prerequisites + AAP + EE:
      $0 --inventory <inv> --credentials <cred>
   
-  2. Upload AAP license via AAP Web UI (manual step)
-  
-  3. Configure AAP for migration:
+  2. Configure AAP for migration:
      $0 --inventory <inv> --credentials <cred> --configure-aap
   
-  4. Launch migration from AAP UI
+  3. Launch migration from AAP UI
 
 Related Playbooks:
   # Launch migration after setup
@@ -187,11 +184,10 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "Inventory:    $INVENTORY"
 echo -e "Credentials:  $CREDENTIALS"
 if [[ "$CONFIGURE_AAP" == "true" ]]; then
-    echo -e "Mode:         Configure AAP for Migration (post-license)"
+    echo -e "Mode:         Configure AAP for Migration"
 elif [[ "$DEPLOY_PREREQS" == "true" ]] && [[ "$DEPLOY_MIGRATION" == "true" ]]; then
     echo -e "Mode:         Full (Prerequisites + AAP + EE)"
-    echo -e "              NOTE: Will stop before AAP configuration"
-    echo -e "              Upload license via AAP UI, then run --configure-aap"
+    echo -e "              Will stop before AAP configuration; run --configure-aap next"
 elif [[ "$DEPLOY_PREREQS" == "true" ]]; then
     echo -e "Mode:         Prerequisites Only (Conversion Host)"
 else
@@ -317,24 +313,17 @@ if [[ $OVERALL_STATUS -eq 0 ]]; then
         echo ""
     elif [[ "$DEPLOY_MIGRATION" == "true" ]]; then
         echo ""
-        echo -e "${YELLOW}⚠️  IMPORTANT - Next Steps:${NC}"
-        echo ""
-        echo "1. Upload AAP License (REQUIRED):"
-        echo "   - Access AAP Dashboard (URL shown in output above)"
-        echo "   - Login as admin"
-        echo "   - Upload your subscription manifest when prompted"
-        echo ""
-        echo "2. After uploading license, configure AAP for migration:"
+        echo -e "${YELLOW}Next Steps:${NC}"
+        echo "1. Configure AAP for migration:"
         echo "   $0 --inventory $INVENTORY --credentials $CREDENTIALS --configure-aap"
         echo ""
-        echo "3. Launch migration from AAP UI"
+        echo "2. Launch migration from AAP UI"
         echo ""
     else
         echo ""
         echo -e "${YELLOW}Next Steps:${NC}"
         echo "1. Access AAP Dashboard (URL shown in output above)"
-        echo "2. Upload license if not already done"
-        echo "3. Run: $0 --inventory $INVENTORY --credentials $CREDENTIALS --configure-aap"
+        echo "2. Run: $0 --inventory $INVENTORY --credentials $CREDENTIALS --configure-aap"
         echo ""
     fi
     

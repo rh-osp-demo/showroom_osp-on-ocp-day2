@@ -160,6 +160,7 @@
          - Execution Environment: VMware migration toolkit Execution Environment
          - Source Control Type: Git
          - Source Control URL: https://github.com/os-migrate/vmware-migration-kit
+         - Source Control Branch: stable
          - Click: Create Project
       
       7. CREATE JOB TEMPLATE

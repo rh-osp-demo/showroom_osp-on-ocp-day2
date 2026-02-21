@@ -2,8 +2,6 @@
 # Configure AAP via API for VM Migration using awx.awx collection
 # This role uses the official AWX Ansible collection which handles authentication properly
 # Documentation: https://docs.ansible.com/ansible/latest/collections/awx/awx/
-#
-# PREREQUISITE: AAP must have a valid license/subscription before running this role
 
 # Step 0: Get AAP credentials and connection info
 - name: Get AAP admin password from secret
@@ -200,6 +198,7 @@
     organization: "Default"
     scm_type: git
     scm_url: "https://github.com/os-migrate/vmware-migration-kit"
+    scm_branch: "stable"
     scm_update_on_launch: true
     default_environment: "VMware Migration toolkit execution environment"
     state: present
@@ -393,6 +392,7 @@
       4. PROJECT: vmware migration toolkit project
          - SCM Type: Git
          - SCM URL: https://github.com/os-migrate/vmware-migration-kit
+         - SCM Branch: stable
          - Update on Launch: Yes
          - Default EE: VMware Migration toolkit execution environment
       
