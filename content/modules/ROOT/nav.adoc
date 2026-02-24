@@ -2,4 +2,4 @@
 ** xref:ansible-playbooks/ansible-playbooks.adoc[Deploy RHOSO 18 using playbooks]
 ** xref:migration/prereqs-migration-centos.adoc[Perform Prerequisite Operations]
 ** xref:migration/ansible-builder-from-code.adoc[Building the RH OpenStack VMware Migration Toolkit Execution Environment]
-** xref:migration/install-os-migrate.adoc[Perform the VM migration from CLI using the RH OpenStack Vmware Migration Toolkit collection]
+** xref:migration/install-os-migrate.adoc[Perform the VM migration from CLI using the RH OpenStack Vmware Migration Toolkit collection with Heat functionality]

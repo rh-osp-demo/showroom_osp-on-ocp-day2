@@ -1,4 +1,42 @@
-= Execute a migration from CLI using the RH OpenStack Vmware Migration Toolkit collection
+= Execute a migration from CLI using the RH OpenStack Vmware Migration Toolkit collection with Heat functionality
+
+== Enable Heat Orchestration Service in the control plane
+
+In the bastion, patch the openstack control plane CR:
+
+[source,bash,role=execute]
+----
+oc patch openstackcontrolplane openstack-control-plane \
+  -n openstack \
+  --type='merge' \
+  -p '{
+    "spec": {
+      "heat": {
+        "enabled": true,
+        "template": {
+          "customServiceConfig": "[DEFAULT]\nenable_stack_adopt = true\n"
+        }
+      }
+    }
+  }'
+----
+. Sample Output
+----
+openstackcontrolplane.core.openstack.org/openstack-control-plane patched
+----
+
+Wait for the Heat services to be ready:
+
+[source,bash,role=execute]
+----
+oc get Heat,HeatAPI,HeatEngine,HeatCFNAPI
+----
+
+. Sample Output
+----
+NAME                           STATUS   MESSAGE
+heat.heat.openstack.org/heat   True     Setup complete
+----
 
 == Configure os-migrate vmware migration kit
 

@@ -13,14 +13,14 @@ sudo dnf install ansible-builder -y
 
 [source,bash,role=execute,subs=attributes]
 ----
-git clone https://github.com/ansible/vmware-migration-toolkit.git
+git clone https://github.com/os-migrate/vmware-migration-kit.git
 ----
 
 Navigate to the repository:
 
 [source,bash,role=execute,subs=attributes]
 ----
-cd vmware-migration-toolkit
+cd vmware-migration-kit
 ----
 
 Checkout the Heat functionality branch:
@@ -39,9 +39,6 @@ make build
 ----
 
 == Creating Execution Environments
-
-For detailed information on creating and using execution environments, see:
-https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.5/html/creating_and_using_execution_environments/assembly-using-builder
 
 === Execution Environment Configuration
 
