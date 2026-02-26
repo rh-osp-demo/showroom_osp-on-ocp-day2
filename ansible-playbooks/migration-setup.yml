@@ -13,6 +13,9 @@
 #   ansible-playbook -i inventory/hosts-<guid>.yml migration-setup.yml --tags ansible-builder
 #   ansible-playbook -i inventory/hosts-<guid>.yml migration-setup.yml --tags configure-migration
 #   ansible-playbook -i inventory/hosts-<guid>.yml migration-setup.yml --tags configure-aap-for-migration
+#
+# Migration scenarios: run migration-scenarios.yml or deploy-migration-scenarios.sh
+# after base config; control via vars/migration.yml (migration_scenarios list).
 
 - name: Install and Configure Ansible Automation Platform
   hosts: bastion
@@ -54,7 +57,7 @@
     - configure-migration
     - migration-config
 
-- name: Configure AAP for VM Migration
+- name: Configure AAP for VM Migration (base only)
   hosts: bastion
   become: false
   gather_facts: false
@@ -110,9 +113,9 @@
           1. Configure AAP for migration:
              ansible-playbook -i inventory/hosts-<guid>.yml migration-setup.yml --tags configure-aap-for-migration
           
-          2. Launch migration:
-             - Navigate to: Resources → Templates → "HAproxy VM Migration"
-             - Click: Launch 🚀
+          2. Create scenario job templates and launch:
+             ./deploy-migration-scenarios.sh --inventory inventory/hosts-<guid>.yml --credentials credentials.yml
+             Then: AAP → Resources → Templates → your scenario → Launch 🚀
           
           ========================================
           Configuration files saved to:

@@ -58,3 +58,10 @@ vms_to_migrate:
 # Set to true to configure AAP automatically via API (recommended)
 # Set to false to generate instructions for manual configuration
 configure_aap_via_api: true
+
+# Migration scenarios: which job template(s) to create in AAP
+# Each entry is a scenario key; the corresponding role name is the key with underscores replaced by hyphens.
+# Example: basic_ha_proxy_migration -> role basic-ha-proxy-migration (creates "HAproxy VM Migration" job template)
+# Set to [] to only run AAP base configuration (no job templates). Add more scenario keys as new roles are added.
+migration_scenarios:
+  - basic_ha_proxy_migration

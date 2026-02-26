@@ -245,99 +245,38 @@
   ignore_errors: true
 
 - name: Display project sync status
-  debug:
+  ansible.builtin.debug:
     msg: |
       {% if project_status.json.status == "successful" %}
       ✅ Project synced successfully from GitHub!
       {% elif project_status.json.status == "failed" %}
-      ❌ Project sync failed. Job template will be created but may not work until project is fixed.
+      ❌ Project sync failed. Migration scenario job templates may not work until project is fixed.
       {% else %}
       ⚠️  Project sync still in progress (status: {{ project_status.json.status | default('unknown') }})
-      Job template will be created with scm_update_on_launch=true
+      Scenario roles use scm_update_on_launch when creating job templates.
       {% endif %}
 
-# Step 7: Read migration configuration for job template extra vars
 - name: Get home directory
-  shell: echo $HOME
+  ansible.builtin.shell: echo $HOME
   register: home_dir
   changed_when: false
 
-- name: Check if migration configuration file exists
-  stat:
-    path: "{{ home_dir.stdout }}/{{ migration_config_dir }}/os_migrate_for_aap.yaml"
-  register: migration_config_file
-
-- name: Read migration configuration file
-  slurp:
-    src: "{{ home_dir.stdout }}/{{ migration_config_dir }}/os_migrate_for_aap.yaml"
-  register: migration_config_content
-  when: migration_config_file.stat.exists
-
-- name: Parse migration configuration
-  set_fact:
-    migration_extra_vars: "{{ (migration_config_content.content | b64decode | from_yaml) if migration_config_file.stat.exists else {} }}"
-
-# Step 8: Create Job Template
-- name: Create HAproxy VM Migration Job Template
-  awx.awx.job_template:
-    name: "HAproxy VM Migration"
-    description: "Migrate HAproxy VMs from VMware to RHOSO"
-    job_type: "run"
-    inventory: "Conversion Host Inventory"
-    project: "vmware migration toolkit project"
-    playbook: "playbooks/migration.yml"
-    execution_environment: "VMware Migration toolkit execution environment"
-    credentials:
-      - "Bastion key"
-    extra_vars: "{{ migration_extra_vars }}"
-    ask_variables_on_launch: true
-    state: present
-    controller_host: "{{ aap_controller_url }}"
-    controller_oauthtoken: "{{ aap_api_token }}"
-    validate_certs: false
-  register: job_template_result
-
-- name: Display job template creation result
-  debug:
-    msg: |
-      {% if job_template_result.failed | default(false) %}
-      ❌ Job template creation failed: {{ job_template_result.msg | default('Unknown error') }}
-      
-      Please check:
-      - Project sync status in AAP UI
-      - Playbook exists at playbooks/migration.yml in the GitHub repository
-      {% else %}
-      ✅ Job template "HAproxy VM Migration" created successfully!
-         ID: {{ job_template_result.id | default('already exists') }}
-      {% endif %}
-
 - name: Display AAP configuration summary
-  debug:
+  ansible.builtin.debug:
     msg: |
       ========================================
-      AAP Configuration Complete via AWX Collection!
+      AAP Base Configuration Complete (AWX Collection)
       ========================================
       
-      ✅ Created Resources:
+      ✅ Created resources (no job templates yet):
       ├─ Credential: Bastion key (SSH Machine)
       ├─ Inventory: Conversion Host Inventory
       │  ├─ Host: conversion_host ({{ rhoso_conversion_host_ip }})
       │  └─ Host: migrator (localhost)
       ├─ Execution Environment: VMware Migration toolkit execution environment
-      ├─ Project: vmware migration toolkit project (synced from GitHub)
-      └─ Job Template: HAproxy VM Migration (READY TO USE)
+      └─ Project: vmware migration toolkit project (synced from GitHub)
       
-      🎯 Next Steps:
-      ========================================
-      1. Access AAP Dashboard: {{ aap_gateway_url }}
-         - Username: admin
-         - Password: {{ aap_admin_password }}
-      
-      2. Navigate to: Resources → Templates → "HAproxy VM Migration"
-      
-      3. Click "Launch" 🚀 to start the VM migration!
-      
-      Migration Target: {{ vms_list[0].name | default('VM configured in extra_vars') }}
+      🎯 Next: Run migration scenario(s) to create job templates, or use AAP UI.
       ========================================
 
 - name: Ensure config directory exists
@@ -347,25 +286,25 @@
     mode: '0755'
 
 - name: Get current timestamp
-  shell: date -u +"%Y-%m-%dT%H:%M:%SZ"
+  ansible.builtin.shell: date -u +"%Y-%m-%dT%H:%M:%SZ"
   register: current_timestamp
   changed_when: false
 
-- name: Save AAP configuration summary
+- name: Save AAP base configuration summary
   ansible.builtin.copy:
     dest: "{{ home_dir.stdout }}/{{ migration_config_dir }}/AAP_AWX_CONFIGURATION_SUMMARY.txt"
     mode: '0644'
     content: |
       ========================================
-      AAP Configuration Summary (AWX Collection)
+      AAP Base Configuration Summary (AWX Collection)
       ========================================
       Configuration Date: {{ current_timestamp.stdout }}
       AAP Dashboard URL: {{ aap_gateway_url }}
       AAP Controller API: {{ aap_controller_url }}
       Method: awx.awx Ansible Collection
       
-      Created Resources:
-      ==================
+      Created Resources (base only; no job templates):
+      =================================================
       
       1. CREDENTIAL: Bastion key
          - Type: Machine (SSH)
@@ -374,68 +313,24 @@
       
       2. INVENTORY: Conversion Host Inventory
          - Organization: Default
-         
-      Hosts:
-      ------
-      a) conversion_host
-         - ansible_host: {{ rhoso_conversion_host_ip }}
-         - ansible_ssh_user: cloud-user
-         
-         b) migrator
-            - ansible_connection: local
-            - ansible_python_interpreter: '{{ '{{' }} ansible_playbook_python {{ '}}' }}'
+         - Hosts: conversion_host ({{ rhoso_conversion_host_ip }}), migrator (local)
       
       3. EXECUTION ENVIRONMENT: VMware Migration toolkit execution environment
          - Image: {{ aap_hub_registry_url }}/{{ ee_image_name }}:{{ ee_image_tag }}
-         - Organization: Default
       
       4. PROJECT: vmware migration toolkit project
-         - SCM Type: Git
-         - SCM URL: https://github.com/os-migrate/vmware-migration-kit
-         - SCM Branch: stable
+         - SCM: https://github.com/os-migrate/vmware-migration-kit (branch: stable)
          - Update on Launch: Yes
-         - Default EE: VMware Migration toolkit execution environment
-      
-      5. JOB TEMPLATE: HAproxy VM Migration
-         - Playbook: playbooks/migration.yml
-         - Inventory: Conversion Host Inventory
-         - Project: vmware migration toolkit project
-         - Execution Environment: VMware Migration toolkit execution environment
-         - Credentials: Bastion key
       
       ========================================
-      How to Launch Migration
+      Job templates
       ========================================
-      
-      Option 1: AAP Web UI
-      ---------------------
-      1. Navigate to: {{ aap_gateway_url }}
-      2. Login: admin / {{ aap_admin_password }}
-      3. Go to: Resources → Templates
-      4. Find: "HAproxy VM Migration"
-      5. Click: Launch icon (🚀)
-      
-      Option 2: Ansible Playbook
-      --------------------------
-      ansible-playbook -i inventory/hosts-{{ guid }}.yml launch-migration.yml
-      
-      Option 3: Complete End-to-End
-      -----------------------------
-      ansible-playbook -i inventory/hosts-{{ guid }}.yml migration-complete.yml \
-        -e @credentials.yml -e "wait_for_migration=true"
+      Job templates are created by migration scenario roles. Set migration_scenarios
+      in vars (e.g. [basic_ha_proxy_migration]) and run the playbook with
+      --tags configure-aap-for-migration to create scenario job templates.
       
       ========================================
-      Migration Configuration
+      Migration config directory
       ========================================
-      
-      Configuration file: {{ home_dir.stdout }}/{{ migration_config_dir }}/os_migrate_for_aap.yaml
-      
-      VMs to migrate:
-      {% for vm in vms_to_migrate %}
-      - {{ vm }}
-      {% endfor %}
-      
-      VMware vCenter: {{ vcenter_hostname }}
-      OpenStack Conversion Host: {{ rhoso_conversion_host_ip }}
-      
+      {{ home_dir.stdout }}/{{ migration_config_dir }}/
       ========================================
