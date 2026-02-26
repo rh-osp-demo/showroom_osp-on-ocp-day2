@@ -129,7 +129,7 @@ EOF
 
 [source,bash,role=execute,subs=attributes]
 ----
-podman login registry.redhat.io
+sudo podman login registry.redhat.io
 ----
 
 == Building the Execution Environment
