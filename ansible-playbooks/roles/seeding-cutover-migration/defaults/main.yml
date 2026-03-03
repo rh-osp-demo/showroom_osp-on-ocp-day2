@@ -1,0 +1,12 @@
+---
+# Defaults for seeding-cutover-migration role.
+# Two-phase VM migration: seeding (CBT sync, no cutover) and cutover (final sync + conversion).
+# Override via play vars or vars_files (e.g. vars/migration.yml).
+# aap_controller_url and aap_api_token are set by configure-aap-api when run before this role.
+migration_config_dir: "os-migrate-env"
+seeding_config_file: "os_migrate_for_aap_seeding.yaml"
+cutover_config_file: "os_migrate_for_aap_cutover.yaml"
+# If true, derive cutover extra_vars from seeding (cutover: true); if false, read cutover_config_file
+cutover_derive_from_seeding: true
+# If true and seeding config is missing, create it from os_migrate_for_aap.yaml with cbt_sync/cutover set for phase 1
+seeding_config_create_from_base: true

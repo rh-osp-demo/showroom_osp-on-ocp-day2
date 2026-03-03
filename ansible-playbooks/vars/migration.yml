@@ -62,6 +62,8 @@ configure_aap_via_api: true
 # Migration scenarios: which job template(s) to create in AAP
 # Each entry is a scenario key; the corresponding role name is the key with underscores replaced by hyphens.
 # Example: basic_ha_proxy_migration -> role basic-ha-proxy-migration (creates "HAproxy VM Migration" job template)
+# Example: seeding_cutover_migration -> role seeding-cutover-migration (creates "VM Seeding" and "VM Cutover" job templates)
 # Set to [] to only run AAP base configuration (no job templates). Add more scenario keys as new roles are added.
 migration_scenarios:
   - basic_ha_proxy_migration
+  # - seeding_cutover_migration  # Uncomment to create two-phase seeding and cutover job templates
