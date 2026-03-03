@@ -6,6 +6,11 @@
 # Intended to run after configure-aap-api (credentials, inventory, project, execution environment must exist).
 # Create the workflow (Seeding → Approval → Cutover) manually in AAP UI or via workflow modules.
 
+# Optional: create the CBT VM in VMware (clone from template, enable CBT, cloud-init, power on)
+- name: Create CBT VM in VMware for seeding/cutover migration
+  ansible.builtin.include_tasks: create_cbt_vm.yml
+  when: seeding_cutover_create_cbt_vm | default(true)
+
 # Read seeding configuration for job template extra vars
 - name: Get home directory
   ansible.builtin.shell: echo $HOME
@@ -31,7 +36,7 @@
 
 - name: Create seeding config from base (cbt_sync true, cutover false)
   ansible.builtin.copy:
-    content: "{{ (base_migration_config_content.content | b64decode | from_yaml) | combine({'cbt_sync': true, 'cutover': false}, recursive=false) | to_nice_yaml }}"
+    content: "{{ (base_migration_config_content.content | b64decode | from_yaml) | combine({'cbt_sync': true, 'cutover': false, 'vms_list': seeding_cutover_vms_list}, recursive=false) | to_nice_yaml }}"
     dest: "{{ home_dir.stdout }}/{{ migration_config_dir }}/{{ seeding_config_file }}"
     mode: '0644'
   when: not seeding_config_file_stat.stat.exists and seeding_config_create_from_base and base_migration_config_stat.stat.exists

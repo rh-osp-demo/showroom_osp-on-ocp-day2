@@ -10,3 +10,35 @@ cutover_config_file: "os_migrate_for_aap_cutover.yaml"
 cutover_derive_from_seeding: true
 # If true and seeding config is missing, create it from os_migrate_for_aap.yaml with cbt_sync/cutover set for phase 1
 seeding_config_create_from_base: true
+# VM(s) to migrate in seeding/cutover job templates (used when creating seeding config from base)
+seeding_cutover_vms_list:
+  - rhel4cbt
+
+# --- Create CBT VM in VMware (optional, before job templates) ---
+# Set to false to skip VM creation (e.g. VM already exists).
+seeding_cutover_create_cbt_vm: true
+# vCenter connection: use hostname/username/password from inventory (vcenter_hostname, vcenter_username, vcenter_password)
+cbt_vm_datacenter: "RS00"
+# One of cbt_vm_cluster or cbt_vm_esxi_host is required for clone; set in inventory or vars.
+cbt_vm_cluster: ""
+cbt_vm_esxi_host: ""
+cbt_vm_datastore: "workload_share_QHFNI"
+cbt_vm_network: "segment-migrating-to-ocpvirt"
+cbt_vm_template: "rhel93-tpl-l"
+# Destination folder under datacenter/vm (e.g. ocpvirt-{{ guid }})
+cbt_vm_folder: "ocpvirt-{{ guid | default('changeme') }}"
+cbt_vm_annotation: "Created via Ansible (seeding-cutover-migration)"
+# Cloud-init userdata for the CBT VM (root password: redhat)
+cbt_vm_cloud_init_userdata: |
+  #cloud-config
+
+  disable_root: false
+  ssh_pwauth: true
+
+  chpasswd:
+    list: |
+      root:redhat
+    expire: false
+
+  users: []
+cbt_vm_cloud_init_metadata: "{}"
