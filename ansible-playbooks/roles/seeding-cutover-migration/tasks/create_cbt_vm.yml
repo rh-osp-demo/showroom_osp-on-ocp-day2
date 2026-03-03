@@ -17,7 +17,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_datacenter }}/vm/{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
   register: cbt_vm_info
   ignore_errors: true
@@ -35,7 +35,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_datacenter }}/vm/{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
     template: "{{ cbt_vm_template }}"
     datastore: "{{ cbt_vm_datastore }}"
@@ -55,7 +55,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_datacenter }}/vm/{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
     state: present
     advanced_settings:
@@ -80,11 +80,11 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_datacenter }}/vm/{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
     state: poweredon
   delegate_to: localhost
 
 - name: Display CBT VM creation result
   ansible.builtin.debug:
-    msg: "CBT VM '{{ seeding_cutover_vms_list[0] }}' created and powered on in folder {{ cbt_vm_datacenter }}/vm/{{ cbt_vm_folder }} (root password: redhat)."
+    msg: "CBT VM '{{ seeding_cutover_vms_list[0] }}' created and powered on in folder {{ cbt_vm_folder }} (root password: redhat)."
