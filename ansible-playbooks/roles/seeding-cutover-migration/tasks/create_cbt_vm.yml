@@ -1,6 +1,14 @@
 ---
 # Create a VM in VMware with CBT enabled and cloud-init guestinfo (per seeding-vm-in-maintenance-windows.adoc).
 # Uses community.vmware. Run on bastion; requires vcenter_hostname, vcenter_username, vcenter_password in inventory.
+# PyVmomi is required by community.vmware VMware modules.
+
+- name: Ensure PyVmomi is installed for community.vmware (CBT VM creation)
+  ansible.builtin.pip:
+    name: pyvmomi
+    state: present
+  delegate_to: localhost
+  become: false
 
 - name: Check if CBT VM already exists
   community.vmware.vmware_guest_info:
