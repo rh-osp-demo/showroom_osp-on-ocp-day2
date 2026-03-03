@@ -119,14 +119,7 @@ In the bastion, create the system package dependencies file:
 ----
 cat << EOF > bindep.txt
 openssh-clients
-sshpass
 python3
-python3-pip
-python3-dnf
-rsync
-gcc
-python3-devel
-git
 EOF
 ----
 

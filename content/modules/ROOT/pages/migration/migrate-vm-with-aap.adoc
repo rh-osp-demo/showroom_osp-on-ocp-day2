@@ -162,7 +162,7 @@ used_mapped_networks: false
 os_migrate_configure_network: true
 
 vms_list:
-  - winweb01-{guid}
+  - haproxy-{guid}
 
 # VMware parameters:
 vcenter_hostname: {vcenter_console}
@@ -190,7 +190,7 @@ EOF
 
 1. From the navigation panel, go to *Automation Execution* → *Templates*.
 2. Click *Create Template* → *Create Job Template* and set the following parameters:
-   * **Name:** Windows VM Migration
+   * **Name:** HAProxy VM Migration
    * **Inventory:** Conversion Host Inventory
    * **Project:** vmware migration toolkit project
    * **Playbook:** `playbooks/migration.yml`
@@ -202,11 +202,18 @@ EOF
 === Running the Migration
 
 1. From the navigation panel, go to *Automation Execution* → *Templates*.
-2. Locate the *Windows VM Migration* template.
+2. Locate the *HAProxy VM Migration* template.
 3. Click the *rocket icon* to launch the migration.
 
 == Access to the VM using Horizon
 
 1. Access to Horizon using the URL: https://horizon-openstack.apps.{guid}.dynamic.redhatworkshops.io
-2. In the top panel, Instances, click on the instance: winweb01-{guid}
+2. In the top panel, Instances, click on the instance: haproxy-{guid}
 3. Click the tab Console to access to the console.
+
+== Delete the VM in the RHOSO environment
+
+[source,bash,role=execute,subs=attributes]
+----
+openstack server delete haproxy-{guid}
+----

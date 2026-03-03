@@ -127,20 +127,14 @@ redhat_automation_hub_token: "{{ redhat_automation_hub_token }}"
 EOF
 ----
 
-=== Deploy Migration Setup
+=== Set up the migration environment
 
-Execute the following command to deploy the migration setup:
+Execute the following command to set up the migration environment (prerequisites + AAP + execution environment):
 
 [source,bash,role=execute,subs=attributes]
 ----
 ./deploy-migration-setup.sh --inventory inventory/hosts-migration-{guid}.yml --credentials credentials.yml
 ----
-
-=== Login to AAP and upload the license
-
-. Navigate to the AAP console at {aap_controller_web_url}[here^].
-. Login as admin using the password provided in the output of the deployment
-. Upload the license file
 
 === Configure AAP for migration
 
@@ -149,4 +143,31 @@ Execute the following command to configure AAP for migration:
 [source,bash,role=execute,subs=attributes]
 ----
 ./deploy-migration-setup.sh --inventory inventory/hosts-migration-{guid}.yml --credentials credentials.yml --configure-aap
+----
+
+=== Configure the migration scenarios
+
+In the bastion, navigate to the `ansible-playbooks` directory and execute the following command to configure the migration scenarios:
+
+[source,bash,role=execute,subs=attributes]
+----
+vi vars/migration.yml
+----
+
+By default, the migration scenarios are configure to build all the possible migration scenarios. You can modify the `migration_scenarios` variable to only build the desired migration scenarios.
+
+[source,yaml,role=execute,subs=attributes]
+----
+[...]
+migration_scenarios:
+  - basic_ha_proxy_migration
+----
+
+=== Deploy the migration scenarios
+
+Execute the following command to deploy the migration scenarios:
+
+[source,bash,role=execute,subs=attributes]
+----
+./deploy-migration-scenarios.sh --inventory inventory/hosts-migration-{guid}.yml --credentials credentials.yml
 ----
