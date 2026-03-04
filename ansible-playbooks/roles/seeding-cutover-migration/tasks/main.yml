@@ -4,7 +4,7 @@
 # - "VM Seeding (Incremental Sync)" job template (cbt_sync: true, cutover: false)
 # - "VM Cutover (Final Cutover)" job template (cutover: true)
 # Intended to run after configure-aap-api (credentials, inventory, project, execution environment must exist).
-# Create the workflow (Seeding → Approval → Cutover) manually in AAP UI or via workflow modules.
+# Optionally creates workflow job template (Seeding → Approval → Cutover) when seeding_cutover_create_workflow is true.
 
 # Optional: create the CBT VM in VMware (clone from template, enable CBT, cloud-init, power on)
 - name: Create CBT VM in VMware for seeding/cutover migration
@@ -155,6 +155,11 @@
          ID: {{ cutover_job_template_result.id | default('already exists') }}
       {% endif %}
 
+# Create workflow: Seeding → Approval → Cutover (per seeding-vm-in-maintenance-windows.adoc)
+- name: Create workflow job template (Seeding → Approval → Cutover)
+  ansible.builtin.include_tasks: create_workflow.yml
+  when: seeding_cutover_create_workflow | default(true) | bool
+
 - name: Display seeding and cutover next steps
   ansible.builtin.debug:
     msg: |
@@ -163,9 +168,8 @@
       ========================================
       1. Access AAP: {{ aap_gateway_url | default('(set by configure-aap-api)') }}
          Username: admin / Password: {{ aap_admin_password | default('(from AAP secret)') }}
-      2. Create workflow in AAP: Resources → Templates → Create → Workflow
-         Name: "VM Migration — Seeding and Cutover"
-         Add: Start → VM Seeding (Incremental Sync) → Approval → VM Cutover (Final Cutover) → Success
+      2. Workflow "VM Migration — Seeding and Cutover" is created automatically (or create manually: Templates → Create → Workflow Job Template).
+         Steps: VM Seeding (Incremental Sync) → Approve cutover → VM Cutover (Final Cutover)
       3. Run "VM Seeding (Incremental Sync)" alone for incremental syncs (no impact), or launch the workflow for seeding → approval → cutover.
       Migration target(s): {{ seeding_extra_vars.vms_list | default(['(see extra_vars)']) | join(', ') }}
       ========================================

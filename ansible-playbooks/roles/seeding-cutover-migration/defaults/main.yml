@@ -23,9 +23,13 @@ cbt_vm_datacenter: "RS00"
 cbt_vm_cluster: ""
 cbt_vm_esxi_host: ""
 cbt_vm_datastore: "workload_share_QHFNI"
-cbt_vm_network: "segment-migrating-to-ocpvirt"
+# Leave empty to inherit template network (same as govc vm.clone). Set to attach clone to a specific portgroup.
+cbt_vm_network: ""
 cbt_vm_template: "rhel93-tpl-l"
-# Destination folder under datacenter/vm (e.g. ocpvirt-{{ guid }})
+# Destination folder: use cbt_vm_folder_path when set (full path), else cbt_vm_folder (name or path)
+# Pre-existing folder full path. When set, overrides cbt_vm_folder. Example: /RS00/vm/Workloads/ocpvirt-r6prp
+cbt_vm_folder_path: "/RS00/vm/Workloads/ocpvirt-r6prp"
+# Fallback when cbt_vm_folder_path is not set (e.g. ocpvirt-{{ guid }})
 cbt_vm_folder: "ocpvirt-{{ guid | default('changeme') }}"
 cbt_vm_annotation: "Created via Ansible (seeding-cutover-migration)"
 # Cloud-init userdata for the CBT VM (root password: redhat)
@@ -42,3 +46,13 @@ cbt_vm_cloud_init_userdata: |
 
   users: []
 cbt_vm_cloud_init_metadata: "{}"
+
+# --- Workflow Job Template (Seeding → Approval → Cutover) ---
+# Set to false to skip workflow creation (e.g. create manually in AAP UI).
+seeding_cutover_create_workflow: true
+seeding_cutover_workflow_name: "VM Migration — Seeding and Cutover"
+seeding_cutover_workflow_inventory: "Conversion Host Inventory"
+seeding_cutover_workflow_organization: "Default"
+seeding_cutover_workflow_approval_name: "Approve cutover"
+seeding_cutover_workflow_approval_description: "Confirm tenant is in maintenance window and ready for outage."
+seeding_cutover_workflow_approval_timeout: 0

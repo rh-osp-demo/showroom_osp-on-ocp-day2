@@ -10,6 +10,10 @@
   delegate_to: localhost
   become: false
 
+- name: Set effective CBT VM folder (full path or fallback)
+  ansible.builtin.set_fact:
+    cbt_vm_folder_effective: "{{ (((cbt_vm_folder_path | default('')) | trim | length) > 0) | ternary((cbt_vm_folder_path | trim), cbt_vm_folder) }}"
+
 - name: Check if CBT VM already exists
   community.vmware.vmware_guest_info:
     hostname: "{{ vcenter_hostname }}"
@@ -17,7 +21,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder_effective }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
   register: cbt_vm_info
   ignore_errors: true
@@ -28,6 +32,7 @@
     cbt_vm_userdata_b64: "{{ cbt_vm_cloud_init_userdata | b64encode }}"
     cbt_vm_metadata_b64: "{{ cbt_vm_cloud_init_metadata | b64encode }}"
 
+# When cbt_vm_network is empty, omit networks so clone inherits template network (same as govc vm.clone)
 - name: Clone VM from template (powered off) for CBT migration
   community.vmware.vmware_guest:
     hostname: "{{ vcenter_hostname }}"
@@ -35,12 +40,11 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder_effective }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
     template: "{{ cbt_vm_template }}"
     datastore: "{{ cbt_vm_datastore }}"
-    networks:
-      - name: "{{ cbt_vm_network }}"
+    networks: "{{ (((cbt_vm_network | default('')) | trim | length) > 0) | ternary([{'name': (cbt_vm_network | trim)}], omit) }}"
     annotation: "{{ cbt_vm_annotation }}"
     state: poweredoff
     cluster: "{{ cbt_vm_cluster if (cbt_vm_cluster | length > 0) else omit }}"
@@ -55,7 +59,7 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder_effective }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
     state: present
     advanced_settings:
@@ -80,11 +84,11 @@
     password: "{{ vcenter_password }}"
     validate_certs: false
     datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_folder }}"
+    folder: "{{ cbt_vm_folder_effective }}"
     name: "{{ seeding_cutover_vms_list[0] }}"
     state: poweredon
   delegate_to: localhost
 
 - name: Display CBT VM creation result
   ansible.builtin.debug:
-    msg: "CBT VM '{{ seeding_cutover_vms_list[0] }}' created and powered on in folder {{ cbt_vm_folder }} (root password: redhat)."
+    msg: "CBT VM '{{ seeding_cutover_vms_list[0] }}' created and powered on in folder {{ cbt_vm_folder_effective }} (root password: redhat)."
