@@ -28,7 +28,7 @@ cbt_vm_network: ""
 cbt_vm_template: "rhel93-tpl-l"
 # Destination folder: use cbt_vm_folder_path when set (full path), else cbt_vm_folder (name or path)
 # Pre-existing folder full path. When set, overrides cbt_vm_folder. Example: /RS00/vm/Workloads/ocpvirt-r6prp
-cbt_vm_folder_path: "/RS00/vm/Workloads/ocpvirt-r6prp"
+cbt_vm_folder_path: "/RS00/vm/Workloads/ocpvirt-{{ guid }}"
 # Fallback when cbt_vm_folder_path is not set (e.g. ocpvirt-{{ guid }})
 cbt_vm_folder: "ocpvirt-{{ guid | default('changeme') }}"
 cbt_vm_annotation: "Created via Ansible (seeding-cutover-migration)"

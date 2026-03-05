@@ -36,6 +36,9 @@ Download the latest Centos Stream 10 qcow2 that it will be used to deploy the co
 curl -O -L https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2
 ----
 
+[NOTE]
+We are using the latest CentOS Stream 10 qcow2 image for the conversion host. Use RHEL image in your customer engagements.
+
 Copy the bastion public key to the openstackclient pod:
 [source,bash,role=execute,subs=attributes]
 ----
@@ -151,3 +154,6 @@ Install the Vmware VIX rpm.
 sudo dnf install -y https://repo.storware.eu/vprotect/current/el9/vmware-vix-disklib-8.0.0-20521017.el9.x86_64.rpm
 logout
 ----
+
+[NOTE]
+Do not do this on production environments. Download the VMware SDK library from the Broadcom website instead. Copy the VMware SDK library to the conversion host and install it in the default location /usr/lib/vmware-vix-disklib & ensure root:root ownership

@@ -18,7 +18,7 @@ ssh-copy-id -p {bastion_ssh_port} {bastion_ssh_user_name}@{bastion_public_hostna
 ----
 +
 
-== Credentials for Ansible Automation Platform
+== Credentials for Ansible Automation Platform and OpenShift Console
 
 Your OpenShift cluster console is available {openshift_cluster_console_url}[here^].
 
