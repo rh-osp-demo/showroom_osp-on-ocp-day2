@@ -211,9 +211,11 @@ EOF
 2. In the top panel, Instances, click on the instance: haproxy-{guid}
 3. Click the tab Console to access to the console.
 
-== Delete the VM in the RHOSO environment
+== Delete the VM in the RHOSO environment before the next lab
 
 [source,bash,role=execute,subs=attributes]
 ----
 openstack server delete haproxy-{guid}
+openstack volume delete haproxy-{guid}-2000
+openstack port delete haproxy-{guid}-NIC-0-VLAN-private
 ----

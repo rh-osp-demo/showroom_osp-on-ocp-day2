@@ -28,7 +28,7 @@ In this lab you will create a *workflow* with two job templates (Seeding and Cut
 
 In the current vcenter environment, there is no virtual machine with CBT enabled. You will create a new virtual machine with CBT enabled. 
 
-We will be using the `govc` command to create the virtual machine. First install it in the bastion:
+In the bastion, we will be using the `govc` command to create the virtual machine. First install it in the bastion:
 [source,bash,role=execute]
 ----
 curl -L -o govc.tar.gz https://github.com/vmware/govmomi/releases/latest/download/govc_Linux_x86_64.tar.gz
@@ -50,18 +50,21 @@ export GOVC_NETWORK='segment-migrating-to-ocpvirt'
 Create the virtual machine, inject the cloud-init data and power on the virtual machine, root password is `redhat`:
 [source,bash,role=execute]
 ----
-USERDATA=$(cat <<'YAML'
-#cloud-config
+PUBKEY_FILE="/home/lab-user/.ssh/${GUID}key.pub"
+PUBKEY="$(< "$PUBKEY_FILE")"
 
+USERDATA=$(cat <<YAML
+#cloud-config
 disable_root: false
 ssh_pwauth: true
 
 chpasswd:
   list: |
-    root:redhat
+    root:toor
   expire: false
 
-users: []
+ssh_authorized_keys:
+  - ${PUBKEY}
 YAML
 )
 
@@ -280,3 +283,32 @@ The workflow is: *Start* → *VM Seeding (Incremental Sync)* → *Approval* → 
 
 *Running only the seeding job (optional):* Go to *Templates* and launch *VM Seeding (Incremental Sync)* directly. You can run it multiple times in different maintenance windows to refresh the copied data; each run syncs only changes (CBT). When ready, run the full workflow to perform approval and cutover, or run *VM Cutover (Final Cutover)* alone if you have already seeded and only need the final step.
 
+Note: The VM cutover would take around 10 minutes to complete.
+
+=== Access to the migrated virtual machine
+
+From the bastion, attach a floating IP to the migrated virtual machine:
+
+[source,bash,role=execute]
+----
+openstack floating ip create public
+openstack server add floating ip rhel4cbt {FLOATING_IP}
+----
+
+From the bastion, access to the migrated virtual machine:
+
+[source,bash,role=execute,subs=attributes]
+----
+ssh -i /home/lab-user/.ssh/{guid}key.pem root@{FLOATING_IP}
+----
+
+=== Cleanup the virtual machine in RHOSO before the next lab
+
+Cleanup the virtual machine in RHOSO:
+
+[source,bash,role=execute]
+----
+openstack server delete rhel4cbt
+openstack volume delete rhel4cbt-2000
+openstack port delete rhel4cbt-NIC-0-VLAN-private
+----
