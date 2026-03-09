@@ -20,7 +20,7 @@ A data-seeding strategy decouples virtual machine disk data transfer from servic
 
 * Performs final delta sync (optional) and guest conversion (e.g. virtio drivers for Windows).
 * Windows VMs are powered off for conversion; tenant has an outage.
-* Use: `import_workloads_cbt_sync: true` (or `false` to skip delta sync), `import_workloads_cutover: true`.
+* Use: `cbt_sync: true` (or `false` to skip delta sync), `cutover: true`.
 
 In this lab you will create a *workflow* with two job templates (Seeding and Cutover) and an approval step so that the cutover runs only after explicit approval, simulating real maintenance windows.
 
@@ -48,24 +48,30 @@ export GOVC_NETWORK='segment-migrating-to-ocpvirt'
 ----
 
 Create the virtual machine, inject the cloud-init data and power on the virtual machine, root password is `redhat`:
+
+Set the GUID and read the public key (run this first):
 [source,bash,role=execute,subs=attributes]
 ----
+GUID='{guid}'
 PUBKEY_FILE="/home/lab-user/.ssh/${GUID}key.pub"
 PUBKEY="$(< "$PUBKEY_FILE")"
+----
 
-USERDATA=$(cat <<YAML
-#cloud-config
-disable_root: false
-ssh_pwauth: true
-
-chpasswd:
-  list: |
-    root:toor
-  expire: false
-
-ssh_authorized_keys:
-  - ${PUBKEY}
-YAML
+Create the VM with cloud-init and power it on (run this second):
+[source,bash,role=execute,subs=none]
+----
+USERDATA=$(printf '%s\n' \
+  '#cloud-config' \
+  'disable_root: false' \
+  'ssh_pwauth: true' \
+  '' \
+  'chpasswd:' \
+  '  list: |' \
+  '    root:redhat' \
+  '  expire: false' \
+  '' \
+  'ssh_authorized_keys:' \
+  "  - $PUBKEY" \
 )
 
 METADATA='{}'
@@ -73,7 +79,7 @@ USERDATA_B64=$(printf "%s" "$USERDATA" | base64 | tr -d '\n')
 METADATA_B64=$(printf "%s" "$METADATA" | base64 | tr -d '\n')
 
 VM_NAME="rhel4cbt"
-FOLDER="ocpvirt-{guid}"
+FOLDER="ocpvirt-$GUID"
 ./govc vm.clone -vm=rhel93-tpl-l -folder="$FOLDER" -on=false -annotation='Created via govc' "$VM_NAME"
 
 ./govc vm.change -vm "$VM_NAME" -e="ctkEnabled=TRUE"
@@ -237,29 +243,30 @@ The workflow chains the two phases and adds an approval step so that the cutover
 *Add the Seeding job node:*
 
 . Click *Add Step* (or the *+* on the start node).
-. Select *Job Template*.
+. Node type: Select *Job Template*.
 . Choose *VM Seeding (Incremental Sync)*.
 . Optionally set a description (e.g. "Incremental sync in maintenance window — no workload impact").
-. Save the node. This is the first step of the workflow.
+. Click Next and it will move to the the review step.
+. Click Finish to save the node. This is the first step of the workflow.
 
 *Add the Approval node:*
 
 . Click the 3 vertical dots on the *VM Seeding (Incremental Sync)* node click on *Add Step and link*.
-. Select *Approval*.
-. Configure the approval (e.g. name: "Approve cutover", add instructions such as "Confirm tenant is in maintenance window and ready for outage").
-. Save the node.
+. Node type: Select *Approval*.
+. Name: "Approve cutover".
+. Description: "Confirm tenant is in maintenance window and ready for outage".
+. Status: "Run on Success".
+. Click Next and it will move to the the review step.
+. Click Finish to save the node.
 
 *Add the Cutover job node:*
 
 . Click the 3 vertical dots on the *Approval* node.
-. Select *Job Template*.
+. Node type: Select *Job Template*.
 . Choose *VM Cutover (Final Cutover)*.
 . Optionally set a description (e.g. "Final sync and conversion — tenant outage").
-. Save the node.
-
-*Connect to Success:*
-
-. Ensure the *VM Cutover (Final Cutover)* node connects to *Success* (or the end node). If your UI uses an explicit *Success* node, connect the cutover node to it.
+. Click Next and it will move to the the review step.
+. Click Finish to save the node.
 
 Finally, save the workflow.
 
@@ -274,12 +281,12 @@ The workflow is: *Start* → *VM Seeding (Incremental Sync)* → *Approval* → 
 1. From the navigation panel, go to *Automation Execution* → *Templates*.
 2. Locate the *VM Migration — Seeding and Cutover* workflow template.
 3. Click the *rocket icon* to launch the workflow.
-4. The *VM Seeding (Incremental Sync)* job runs first. Wait for it to complete (this simulates a maintenance window with no impact to the workload).
+4. The *VM Seeding (Incremental Sync)* job runs first. Wait for it to complete (this simulates a maintenance window with no impact to the workload). It should take around 4 minutes to complete.
 5. The workflow then pauses at the *Approval* node.
 6. Re-run *VM Migration — Seeding and Cutover* workflow template clicking on the *rocket icon* again, that simulates a second maintenance window with no impact to the workload.
 7. The workflow then pauses at the *Approval* node.
 8. Go to *Automation Execution* → *Jobs* (or *Workflow Jobs*), open the running workflow job, and approve the approval step.
-9. After approval, the *VM Cutover (Final Cutover)* job runs. This simulates the maintenance window where the tenant has an outage. Wait for it to complete.
+9. After approval, the *VM Cutover (Final Cutover)* job runs. This simulates the maintenance window where the tenant has an outage. Wait for it to complete. It should take around 10 minutes to complete.
 
 *Running only the seeding job (optional):* Go to *Templates* and launch *VM Seeding (Incremental Sync)* directly. You can run it multiple times in different maintenance windows to refresh the copied data; each run syncs only changes (CBT). When ready, run the full workflow to perform approval and cutover, or run *VM Cutover (Final Cutover)* alone if you have already seeded and only need the final step.
 

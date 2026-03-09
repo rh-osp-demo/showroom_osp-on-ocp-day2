@@ -185,7 +185,7 @@ From the bastion, attach a floating IP to the migrated virtual machine:
 [source,bash,role=execute]
 ----
 openstack floating ip create public
-openstack server add floating ip haproxy-{guid} {FLOATING_IP}
+openstack server add floating ip haproxy_{guid} {FLOATING_IP}
 ----
 
 From the bastion, ping to the migrated virtual machine:
@@ -199,7 +199,7 @@ ping {FLOATING_IP}
 
 [source,bash,role=execute,subs=attributes]
 ----
-openstack server delete haproxy-{guid}
-openstack volume delete haproxy-{guid}-2000
-openstack port delete haproxy-{guid}-NIC-0-VLAN-private
+openstack server delete haproxy_{guid}
+openstack volume delete haproxy_{guid}-2000
+openstack port delete haproxy_{guid}-NIC-0-VLAN-private
 ----
