@@ -16,7 +16,6 @@ SSH password is `{bastion_ssh_password}`. The uuid of your lab is: `{guid}`
 ----
 ssh-copy-id -p {bastion_ssh_port} {bastion_ssh_user_name}@{bastion_public_hostname} 
 ----
-+
 
 == Credentials for Ansible Automation Platform and OpenShift Console
 
