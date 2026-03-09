@@ -67,7 +67,7 @@ dependencies:
   galaxy: requirements.yml
   python_interpreter:
     package_system: "python3"
-    python_path: "/usr/bin/python3.11"
+    python_path: "/usr/bin/python3"
 additional_build_files:
   - src: ansible.cfg
     dest: .
