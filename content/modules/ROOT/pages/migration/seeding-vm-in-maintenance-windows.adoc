@@ -48,7 +48,7 @@ export GOVC_NETWORK='segment-migrating-to-ocpvirt'
 ----
 
 Create the virtual machine, inject the cloud-init data and power on the virtual machine, root password is `redhat`:
-[source,bash,role=execute]
+[source,bash,role=execute,subs=attributes]
 ----
 PUBKEY_FILE="/home/lab-user/.ssh/${GUID}key.pub"
 PUBKEY="$(< "$PUBKEY_FILE")"
