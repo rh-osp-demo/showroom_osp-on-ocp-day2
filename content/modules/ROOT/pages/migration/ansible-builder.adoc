@@ -129,6 +129,8 @@ EOF
 
 In the bastion, create the configuration file:
 
+Note: The token is the offline token created in the previous section.
+
 .ansible.cfg (Public Hub)
 [source,ini,role=execute,subs=attributes]
 ----
@@ -203,4 +205,167 @@ Your execution environment URL is:
 [source,bash,role=execute,subs=attributes]
 ----
 default-route-openshift-image-registry.apps.cluster-{guid}.dynamic.redhatworkshops.io/aap/rhospvmt-ee:latest
+----
+
+== Troubleshooting the Execution Environment Build
+
+If the execution environment build fails, you can troubleshoot the build by accessing the logs of the build using the following command:
+[source,bash,role=execute,subs=attributes]
+----
+podman build --tag rhospvmt-ee:latest -v 3
+----
+
+If you get the following error:
+
+---
+Ansible Builder is generating your execution environment build context.
+File context/_build/requirements.yml is already up-to-date.
+File context/_build/requirements.txt is already up-to-date.
+File context/_build/bindep.txt is already up-to-date.
+Creating context/_build
+File context/_build/ansible.cfg is already up-to-date.
+File context/_build/scripts/assemble is already up-to-date.
+File context/_build/scripts/install-from-bindep is already up-to-date.
+File context/_build/scripts/introspect.py is already up-to-date.
+File context/_build/scripts/check_galaxy is already up-to-date.
+File context/_build/scripts/check_ansible is already up-to-date.
+File context/_build/scripts/entrypoint is already up-to-date.
+Ansible Builder is building your execution environment image. Tags: rhospvmt-ee:latest
+Running command:
+  podman build -f context/Containerfile -t rhospvmt-ee:latest context
+[1/4] STEP 1/17: FROM registry.redhat.io/ansible-automation-platform-25/ee-minimal-rhel9:latest AS base
+[1/4] STEP 2/17: USER root
+--> Using cache 041a2951b8b5b2b0b0852b2e9ce9a33f400c14d73724affb130d99f24cad96d9
+--> 041a2951b8b5
+[1/4] STEP 3/17: ARG EE_BASE_IMAGE
+--> Using cache 2dae976696d382681acf21dc04212c79d4bea3d7e22838c7be936f43ee13ef9c
+--> 2dae976696d3
+[1/4] STEP 4/17: ARG PYCMD
+--> Using cache 4e0c85b72627422a61005286893f81d4244cd7590e5d8ee06ff0e4913e57136e
+--> 4e0c85b72627
+[1/4] STEP 5/17: ARG PYPKG
+--> Using cache ef2edf843c58bd0eaa5c4866175c140c16abf74cbbddf379bdb040d258e6efb4
+--> ef2edf843c58
+[1/4] STEP 6/17: ARG PKGMGR_PRESERVE_CACHE
+--> Using cache b43ff007255d9253031c508b82f62fc6f55c7a745d8ac64b06544f0f82d9a16b
+--> b43ff007255d
+[1/4] STEP 7/17: ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+--> Using cache a098a373c93affec80f424b7c327908974823294303f8e373f3bf6015cc0f82d
+--> a098a373c93a
+[1/4] STEP 8/17: ARG ANSIBLE_GALAXY_CLI_ROLE_OPTS
+--> Using cache f0ffeede28973879b2b200f00930661e71e11d381c4357a85b47c155b87ec124
+--> f0ffeede2897
+[1/4] STEP 9/17: ARG ANSIBLE_INSTALL_REFS
+--> Using cache a873937831d62ceae6118b4532a2668217b094b41da0dcc91d35352071e77a48
+--> a873937831d6
+[1/4] STEP 10/17: ARG PKGMGR
+--> Using cache 26817f730b9118163f2f9dd8db3b28eadd7c49f11801a85cfe153f67ed91e091
+--> 26817f730b91
+[1/4] STEP 11/17: RUN mkdir -p /etc/sudoers.d
+--> Using cache dad526b3f8944a92909b4821c9370d8802b16b7fff00d0e664bcf88f19a732d8
+--> dad526b3f894
+[1/4] STEP 12/17: RUN echo 'cloud-user ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/cloud-user
+--> Using cache b143439b085ea6febbc047d60013077c4515cf947a1025ccc3738690e90002a1
+--> b143439b085e
+[1/4] STEP 13/17: RUN $PKGMGR install $PYPKG -y ; if [ -z $PKGMGR_PRESERVE_CACHE ]; then $PKGMGR clean all; fi
+--> Using cache 11716d97417d7003ef8ffe5185375eb8d6299a6ca108c40d1827150cacc30f77
+--> 11716d97417d
+[1/4] STEP 14/17: RUN $PYCMD -m ensurepip
+--> Using cache 610ea6121c424df0c02a42a52c5e51738bcb8f2179142dde8c169f655cf5f940
+--> 610ea6121c42
+[1/4] STEP 15/17: RUN $PYCMD -m pip install --no-cache-dir $ANSIBLE_INSTALL_REFS
+--> Using cache 58f16a7b617883cc19b5ce053f6a1312a4aec958a3170bb323f6e4bca32b87f8
+--> 58f16a7b6178
+[1/4] STEP 16/17: COPY _build/scripts/ /output/scripts/
+--> Using cache 7060d00d6bbf155f934ab0985883e49770930d77c0fc4dddf31466a6d1b7d445
+--> 7060d00d6bbf
+[1/4] STEP 17/17: COPY _build/scripts/entrypoint /opt/builder/bin/entrypoint
+--> Using cache c8bb274b71f329e32a7e264c874d7d262ab0dcdc162db68d3ec3b57fb9952f70
+--> c8bb274b71f3
+[4/4] STEP 1/22: FROM c8bb274b71f329e32a7e264c874d7d262ab0dcdc162db68d3ec3b57fb9952f70 AS final
+[4/4] STEP 2/22: ARG EE_BASE_IMAGE
+--> Using cache 08ab35743876e59fda0542884324e31b442b19283d789930a7a0d91fdfcab886
+--> 08ab35743876
+[4/4] STEP 3/22: ARG PYCMD
+--> Using cache 5dbb2facfa7604804214963087dae8eb0ee72d203cfa17f92b4e352c01ae6eb4
+--> 5dbb2facfa76
+[4/4] STEP 4/22: ARG PYPKG
+--> Using cache 860c4f02a5af062115ce82ad4f81baeff19f1e1f0df3ce1f616b21c420ececfe
+--> 860c4f02a5af
+[4/4] STEP 5/22: ARG PKGMGR_PRESERVE_CACHE
+--> Using cache 2c28abb38b498a872e8cad2feb9db6243e4389a62fa46c86fc470f048b6a1682
+--> 2c28abb38b49
+[4/4] STEP 6/22: ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+--> Using cache d1e28bdcd22323c3338d354364b58711d1d1f84ed35aae64b87973524177cea5
+--> d1e28bdcd223
+[4/4] STEP 7/22: ARG ANSIBLE_GALAXY_CLI_ROLE_OPTS
+--> Using cache 103ceddf5841afedab6fec84aa835b43bdf26acbf117b266023fc27b62e09eb9
+--> 103ceddf5841
+[4/4] STEP 8/22: ARG ANSIBLE_INSTALL_REFS
+--> Using cache 61c3bc2614e0482759e085fb0fc3eb27c4536ed2dcc9336e1e2170836c4be10b
+--> 61c3bc2614e0
+[4/4] STEP 9/22: ARG PKGMGR
+--> Using cache 3243a7294e07ddbefa48f601828201fc54073568198f10ca037e87a2dcf83955
+--> 3243a7294e07
+[4/4] STEP 10/22: RUN /output/scripts/check_ansible $PYCMD
+--> Using cache 1e9d2757512c7eab952b618cf76c69c60f2d623fc09e1a324374cc48c1a62a20
+--> 1e9d2757512c
+[4/4] STEP 11/22: COPY --from=galaxy /usr/share/ansible /usr/share/ansible
+[2/4] STEP 1/14: FROM c8bb274b71f329e32a7e264c874d7d262ab0dcdc162db68d3ec3b57fb9952f70 AS galaxy
+[2/4] STEP 2/14: ARG EE_BASE_IMAGE
+--> Using cache 08ab35743876e59fda0542884324e31b442b19283d789930a7a0d91fdfcab886
+--> 08ab35743876
+[2/4] STEP 3/14: ARG PYCMD
+--> Using cache 5dbb2facfa7604804214963087dae8eb0ee72d203cfa17f92b4e352c01ae6eb4
+--> 5dbb2facfa76
+[2/4] STEP 4/14: ARG PYPKG
+--> Using cache 860c4f02a5af062115ce82ad4f81baeff19f1e1f0df3ce1f616b21c420ececfe
+--> 860c4f02a5af
+[2/4] STEP 5/14: ARG PKGMGR_PRESERVE_CACHE
+--> Using cache 2c28abb38b498a872e8cad2feb9db6243e4389a62fa46c86fc470f048b6a1682
+--> 2c28abb38b49
+[2/4] STEP 6/14: ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+--> Using cache d1e28bdcd22323c3338d354364b58711d1d1f84ed35aae64b87973524177cea5
+--> d1e28bdcd223
+[2/4] STEP 7/14: ARG ANSIBLE_GALAXY_CLI_ROLE_OPTS
+--> Using cache 103ceddf5841afedab6fec84aa835b43bdf26acbf117b266023fc27b62e09eb9
+--> 103ceddf5841
+[2/4] STEP 8/14: ARG ANSIBLE_INSTALL_REFS
+--> Using cache 61c3bc2614e0482759e085fb0fc3eb27c4536ed2dcc9336e1e2170836c4be10b
+--> 61c3bc2614e0
+[2/4] STEP 9/14: ARG PKGMGR
+--> Using cache 3243a7294e07ddbefa48f601828201fc54073568198f10ca037e87a2dcf83955
+--> 3243a7294e07
+[2/4] STEP 10/14: RUN /output/scripts/check_galaxy
+--> Using cache fffe9231680cbc0e1c0a339fb999fc4bd12fc05ff69bb42ecb70286cdea237d4
+--> fffe9231680c
+[2/4] STEP 11/14: COPY _build /build
+--> Using cache 36637e3c7be1ef06a0d4ac1709fcbbf0970e23975793cca7e0e7ae20fda3cbce
+--> 36637e3c7be1
+[2/4] STEP 12/14: WORKDIR /build
+--> Using cache 0cca964c6ce9d0b92c3eac10b5471b84a8d657e7410599b3df126b85a318c2a1
+--> 0cca964c6ce9
+[2/4] STEP 13/14: RUN ansible-galaxy role install $ANSIBLE_GALAXY_CLI_ROLE_OPTS -r requirements.yml --roles-path "/usr/share/ansible/roles"
+--> Using cache fb033d61b5b4d63826e8023267afc676d721701c1a7543afd55b4484763369eb
+--> fb033d61b5b4
+[2/4] STEP 14/14: RUN ANSIBLE_GALAXY_DISABLE_GPG_VERIFY=1 ansible-galaxy collection install $ANSIBLE_GALAXY_CLI_COLLECTION_OPTS -r requirements.yml --collections-path "/usr/share/ansible/collections"
+[WARNING]: Skipping Galaxy server https://console.redhat.com/api/automation-
+hub/content/published/. Got an unexpected error when getting available versions
+of collection vmware.vmware: HTTP Error 400: Bad Request
+ERROR! Unexpected Exception, this is probably a bug: HTTP Error 400: Bad Request
+Starting galaxy collection install process
+Process install dependency map
+to see the full traceback, use -vvv
+[3/4] STEP 1/16: FROM c8bb274b71f329e32a7e264c874d7d262ab0dcdc162db68d3ec3b57fb9952f70 AS builder
+[3/4] STEP 2/16: WORKDIR /build
+Error: building at STEP "RUN ANSIBLE_GALAXY_DISABLE_GPG_VERIFY=1 ansible-galaxy collection install $ANSIBLE_GALAXY_CLI_COLLECTION_OPTS -r requirements.yml --collections-path "/usr/share/ansible/collections"": while running runtime: exit status 250
+---
+
+Make sure that the automation hub token is valid and not expired.
+
+Make sure to remove the context before building the execution environment again:
+
+[source,bash,role=execute,subs=attributes]
+----
+rm -rf context
 ----

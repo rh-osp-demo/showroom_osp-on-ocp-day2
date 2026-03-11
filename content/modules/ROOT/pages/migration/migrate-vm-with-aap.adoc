@@ -203,3 +203,18 @@ openstack server delete haproxy_{guid}
 openstack volume delete haproxy_{guid}-2000
 openstack port delete haproxy_{guid}-NIC-0-VLAN-private
 ----
+
+== Troubleshooting the Migration
+
+If the migration fails, or you want to troubleshoot the migration, you can access the logs by logging into the conversion host using the following command:
+[source,bash,role=execute]
+----
+ssh -i /home/lab-user/.ssh/{guid}key.pem cloud-user@{rhoso_conversion_host_ip}
+----
+
+Then, you can access the logs of the migration using the following command:
+[source,bash,role=execute]
+----
+sudo -i
+less /tmp/osm-nbdkit-haproxy_{guid}-*.log
+----
