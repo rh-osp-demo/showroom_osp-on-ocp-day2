@@ -13,6 +13,7 @@ sudo dnf install ansible-builder -y
 
 [source,bash,role=execute,subs=attributes]
 ----
+cd
 git clone https://github.com/os-migrate/vmware-migration-kit.git
 ----
 
@@ -21,14 +22,6 @@ Navigate to the repository:
 [source,bash,role=execute,subs=attributes]
 ----
 cd vmware-migration-kit
-----
-
-Checkout the Heat functionality branch:
-
-[source,bash,role=execute,subs=attributes]
-----
-git fetch origin pull/206/head:pr-206
-git checkout pr-206
 ----
 
 Make build the binaries:
