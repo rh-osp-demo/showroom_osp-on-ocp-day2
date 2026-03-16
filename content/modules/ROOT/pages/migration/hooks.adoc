@@ -93,6 +93,91 @@ SCRIPT
 sudo chmod 0755 /opt/os-migrate/scripts/firstboot.sh
 ----
 
+== Creating the virtual machine to be migrated
+
+In the current vcenter environment, there is no virtual machine with CBT enabled. You will create a new virtual machine with CBT enabled. 
+
+In the bastion, we will be using the `govc` command to create the virtual machine. First install it in the bastion:
+[source,bash,role=execute]
+----
+curl -L -o govc.tar.gz https://github.com/vmware/govmomi/releases/latest/download/govc_Linux_x86_64.tar.gz
+tar -xzf govc.tar.gz
+----
+
+Then set the environment variables for the `govc` command:
+[source,bash,role=execute,subs=attributes]
+----
+export GOVC_URL='{vcenter_console}'
+export GOVC_USERNAME='{vcenter_full_user}'
+export GOVC_PASSWORD='{vcenter_password}'
+export GOVC_INSECURE=true
+export GOVC_DATACENTER='RS00'
+export GOVC_DATASTORE='workload_share_QHFNI'
+export GOVC_NETWORK='segment-migrating-to-ocpvirt'
+----
+
+Create the virtual machine, inject the cloud-init data and power on the virtual machine, root password is `redhat`:
+
+Set the GUID and read the public key (run this first):
+[source,bash,role=execute,subs=attributes]
+----
+GUID='{guid}'
+PUBKEY_FILE="/home/lab-user/.ssh/${GUID}key.pub"
+PUBKEY="$(< "$PUBKEY_FILE")"
+----
+
+Create the VM with cloud-init and power it on (run this second):
+[source,bash,role=execute,subs=none]
+----
+USERDATA=$(printf '%s\n' \
+  '#cloud-config' \
+  'disable_root: false' \
+  'ssh_pwauth: true' \
+  '' \
+  'chpasswd:' \
+  '  list: |' \
+  '    root:redhat' \
+  '  expire: false' \
+  '' \
+  'ssh_authorized_keys:' \
+  "  - $PUBKEY" \
+)
+
+METADATA='{}'
+USERDATA_B64=$(printf "%s" "$USERDATA" | base64 | tr -d '\n')
+METADATA_B64=$(printf "%s" "$METADATA" | base64 | tr -d '\n')
+
+VM_NAME="rhel4hooks"
+FOLDER="ocpvirt-$GUID"
+./govc vm.clone -vm=rhel93-tpl-l -folder="$FOLDER" -on=false -annotation='Created via govc' "$VM_NAME"
+
+./govc vm.change -vm "$VM_NAME" -e="ctkEnabled=TRUE"
+./govc vm.change -vm "$VM_NAME" -e="scsi0:0.ctkEnabled=TRUE"
+
+./govc vm.change -vm "$VM_NAME" \
+  -e "guestinfo.userdata=${USERDATA_B64}" \
+  -e "guestinfo.userdata.encoding=base64" \
+  -e "guestinfo.metadata=${METADATA_B64}" \
+  -e "guestinfo.metadata.encoding=base64"
+
+./govc vm.power -on "$VM_NAME"
+----
+
+Note: If you get the following error:
+
+----
+./govc: datacenter 'RS00' not found
+----
+use the following command to set the datacenter:
+[source,bash,role=execute]
+----
+export GOVC_DATACENTER='RS01'
+export GOVC_DATASTORE='workload_share_kc7AL'
+
+----
+
+Then, run the previous commands again.
+
 == Preparing the Bastion
 
 In the bastion, create the folder to store the ansible variables:
@@ -149,7 +234,7 @@ used_mapped_networks: false
 os_migrate_configure_network: true
 
 vms_list:
-  - rhel4cbt
+  - rhel4hooks
 
 # Bootscript path:
 boot_script_path: /opt/os-migrate/scripts/firstboot.sh
@@ -206,7 +291,7 @@ From the bastion, attach a floating IP to the migrated virtual machine:
 [source,bash,role=execute]
 ----
 openstack floating ip create public
-openstack server add floating ip rhel4cbt {FLOATING_IP}
+openstack server add floating ip rhel4hooks {FLOATING_IP}
 ----
 
 From the bastion, access to the migrated virtual machine:
@@ -227,7 +312,7 @@ Cleanup the virtual machine in RHOSO:
 
 [source,bash,role=execute]
 ----
-openstack server delete rhel4cbt
-openstack volume delete rhel4cbt-2000
-openstack port delete rhel4cbt-NIC-0-VLAN-private
+openstack server delete rhel4hooks
+openstack volume delete rhel4hooks-2000
+openstack port delete rhel4hooks-NIC-0-VLAN-private
 ----

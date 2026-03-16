@@ -78,8 +78,6 @@ additional_build_steps:
 EOF
 ----
 
-WARNING: The epel-release package is not available in the base image. It is added to the execution environment to provide access to the epel repository as a workaround to avoid the error in this bug: https://issues.redhat.com/browse/OSPRH-25458
-
 === Python Requirements
 
 In the bastion, create the Python dependencies file:
