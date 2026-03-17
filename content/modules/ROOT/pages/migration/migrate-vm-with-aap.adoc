@@ -4,7 +4,7 @@
 
 === Creating Credentials
 
-1. From the navigation panel, go to *Automation Execution* → *Credentials*.
+1. From the navigation panel, go to *Automation Execution*  → *Infrastructure* → *Credentials*.
 2. Click *Create Credentials* and set the following parameters:
    * **Name:** Bastion key
    * **Credential Type:** Machine

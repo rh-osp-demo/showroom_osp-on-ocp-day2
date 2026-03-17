@@ -123,12 +123,12 @@ GUID='{guid}'
 PUBKEY_FILE="/home/lab-user/.ssh/{guid}key.pub"
 PUBKEY="$(< "$PUBKEY_FILE")"
 VM_SOURCE="haproxy-{guid}"
+VM_NAME="rhel4hooks-{guid}"
 ----
 
 Create the VM with cloud-init and power it on (run this second):
 [source,bash,role=execute,subs=none]
 ----
-VM_NAME="rhel4hooks"
 FOLDER="ocpvirt-$GUID"
 
 # Obtener el datacenter real desde vCenter a partir de la VM/template origen
@@ -241,7 +241,7 @@ used_mapped_networks: false
 os_migrate_configure_network: true
 
 vms_list:
-  - rhel4hooks
+  - rhel4hooks-{guid}
 
 # Bootscript path:
 boot_script_path: /opt/os-migrate/scripts/firstboot.sh
