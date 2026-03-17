@@ -111,8 +111,6 @@ export GOVC_URL='{vcenter_console}'
 export GOVC_USERNAME='{vcenter_full_user}'
 export GOVC_PASSWORD='{vcenter_password}'
 export GOVC_INSECURE=true
-export GOVC_DATACENTER='RS00'
-export GOVC_DATASTORE='workload_share_QHFNI'
 export GOVC_NETWORK='segment-migrating-to-ocpvirt'
 ----
 
@@ -122,13 +120,36 @@ Set the GUID and read the public key (run this first):
 [source,bash,role=execute,subs=attributes]
 ----
 GUID='{guid}'
-PUBKEY_FILE="/home/lab-user/.ssh/${GUID}key.pub"
+PUBKEY_FILE="/home/lab-user/.ssh/{guid}key.pub"
 PUBKEY="$(< "$PUBKEY_FILE")"
 ----
 
 Create the VM with cloud-init and power it on (run this second):
 [source,bash,role=execute,subs=none]
 ----
+VM_SOURCE="haproxy-{guid}"
+VM_NAME="rhel4hooks"
+FOLDER="ocpvirt-$GUID"
+
+# Obtener el datacenter real desde vCenter a partir de la VM/template origen
+GOVC_DATACENTER=$(./govc find / -type m -name "$VM_SOURCE" | awk -F/ 'NF>1 {print $2; exit}')
+
+if [ -z "$GOVC_DATACENTER" ]; then
+  echo "Could not determine datacenter for VM source: $VM_SOURCE"
+  exit 1
+fi
+
+export GOVC_DATACENTER
+
+case "$GOVC_DATACENTER" in
+  RS01) export GOVC_DATASTORE='workload_share_kc7AL' ;;
+  RS00) export GOVC_DATASTORE='workload_share_QHFNI' ;;
+  *)
+    echo "Unsupported datacenter: $GOVC_DATACENTER"
+    exit 1
+    ;;
+esac
+
 USERDATA=$(printf '%s\n' \
   '#cloud-config' \
   'disable_root: false' \
@@ -147,9 +168,7 @@ METADATA='{}'
 USERDATA_B64=$(printf "%s" "$USERDATA" | base64 | tr -d '\n')
 METADATA_B64=$(printf "%s" "$METADATA" | base64 | tr -d '\n')
 
-VM_NAME="rhel4hooks"
-FOLDER="ocpvirt-$GUID"
-./govc vm.clone -vm=rhel93-tpl-l -folder="$FOLDER" -on=false -annotation='Created via govc' "$VM_NAME"
+./govc vm.clone -vm="$VM_SOURCE" -folder="$FOLDER" -on=false -annotation='Created via govc' "$VM_NAME"
 
 ./govc vm.change -vm "$VM_NAME" -e="ctkEnabled=TRUE"
 ./govc vm.change -vm "$VM_NAME" -e="scsi0:0.ctkEnabled=TRUE"
@@ -163,18 +182,6 @@ FOLDER="ocpvirt-$GUID"
 ./govc vm.power -on "$VM_NAME"
 ----
 
-Note: If you get the following error:
-
-----
-./govc: datacenter 'RS00' not found
-----
-use the following command to set the datacenter:
-[source,bash,role=execute]
-----
-export GOVC_DATACENTER='RS01'
-export GOVC_DATASTORE='workload_share_kc7AL'
-
-----
 
 Then, run the previous commands again.
 
