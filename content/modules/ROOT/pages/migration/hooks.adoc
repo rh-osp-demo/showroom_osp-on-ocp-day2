@@ -295,10 +295,10 @@ EOF
 
 From the bastion, attach a floating IP to the migrated virtual machine:
 
-[source,bash,role=execute]
+[source,bash,role=execute,subs=attributes]
 ----
 openstack floating ip create public
-openstack server add floating ip rhel4hooks {FLOATING_IP}
+openstack server add floating ip rhel4hooks_{guid} {FLOATING_IP}
 ----
 
 From the bastion, access to the migrated virtual machine:
@@ -317,9 +317,16 @@ cat /etc/os-migrate-firstboot-done
 
 Cleanup the virtual machine in RHOSO:
 
+[source,bash,role=execute,subs=attributes]
+----
+openstack server delete rhel4hooks_{guid}
+openstack volume delete rhel4hooks_{guid}-2000
+openstack port delete rhel4hooks_{guid}-NIC-0-VLAN-private
+----
+
+=== Destroy the virtual machine in vCenter
+
 [source,bash,role=execute]
 ----
-openstack server delete rhel4hooks
-openstack volume delete rhel4hooks-2000
-openstack port delete rhel4hooks-NIC-0-VLAN-private
+./govc vm.destroy rhel4hooks-{guid}
 ----

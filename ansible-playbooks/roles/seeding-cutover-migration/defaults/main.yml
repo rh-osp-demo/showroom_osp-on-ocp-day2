@@ -12,7 +12,7 @@ cutover_derive_from_seeding: true
 seeding_config_create_from_base: true
 # VM(s) to migrate in seeding/cutover job templates (used when creating seeding config from base)
 seeding_cutover_vms_list:
-  - rhel4cbt
+  - rhel4cbt-{{ guid | default('changeme') }}
 
 # --- Create CBT VM in VMware (optional, before job templates) ---
 # Set to false to skip VM creation (e.g. VM already exists).
@@ -25,7 +25,7 @@ cbt_vm_esxi_host: ""
 cbt_vm_datastore: "workload_share_QHFNI"
 # Leave empty to inherit template network (same as govc vm.clone). Set to attach clone to a specific portgroup.
 cbt_vm_network: ""
-cbt_vm_template: "rhel93-tpl-l"
+cbt_vm_template: haproxy-{{ guid | default('changeme') }}
 # Destination folder: use cbt_vm_folder_path when set (full path), else cbt_vm_folder (name or path)
 # Pre-existing folder full path. When set, overrides cbt_vm_folder. Example: /RS00/vm/Workloads/ocpvirt-r6prp
 cbt_vm_folder_path: "/RS00/vm/Workloads/ocpvirt-{{ guid }}"
