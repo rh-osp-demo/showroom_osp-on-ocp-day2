@@ -122,12 +122,12 @@ Set the GUID and read the public key (run this first):
 GUID='{guid}'
 PUBKEY_FILE="/home/lab-user/.ssh/{guid}key.pub"
 PUBKEY="$(< "$PUBKEY_FILE")"
+VM_SOURCE="haproxy-{guid}"
 ----
 
 Create the VM with cloud-init and power it on (run this second):
 [source,bash,role=execute,subs=none]
 ----
-VM_SOURCE="haproxy-{guid}"
 VM_NAME="rhel4hooks"
 FOLDER="ocpvirt-$GUID"
 
