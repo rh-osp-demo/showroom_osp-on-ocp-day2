@@ -4,7 +4,7 @@
 
 === Creating Credentials
 
-1. From the navigation panel, go to *Automation Execution* → *Credentials*.
+1. From the navigation panel, go to *Automation Execution*  → *Infrastructure* → *Credentials*.
 2. Click *Create Credentials* and set the following parameters:
    * **Name:** Bastion key
    * **Credential Type:** Machine
@@ -56,35 +56,6 @@ Click *Create Host*.
 
 === Creating an Execution Environment
 
-==== If using internal AAP registry:
-
-===== Step 1: Access Automation Content
-
-. Log into your AAP web interface
-. Navigate to *Automation Content* → *Execution Environments*
-. You should see your pushed execution environment listed (e.g., `rhospvmt-ee`)
-
-===== Step 2: Use in Controller
-
-. Locate your execution environment in the list
-. Click the *three vertical dots* (⋮) menu next to your execution environment
-. Select *Use in Controller*
-. You will be redirected to the execution environment creation page with the following fields:
-  ** *Name*: VMware Migration toolkit execution environment
-  ** *Image*: This field is pre-filled with your pushed EE image path
-  ** *Description*: Optional description field
-. Click *Create Execution Environment* to complete the configuration
-
-===== Step 3: Verify Configuration
-
-After clicking "Create Execution Environment":
-
-. You will be automatically redirected to *Automation Execution* → *Infrastructure* → *Execution Environments*.
-. Verify your execution environment appears in the list with:
-  ** *Name*: VMware Migration toolkit execution environment
-  ** *Image*: Full registry path to your pushed image
-  ** *Status*: Should show as available
-
 ==== If using OCP container registry:
 
 1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Execution Environments*.
@@ -100,8 +71,8 @@ After clicking "Create Execution Environment":
 2. Click *Create Project* and set the following parameters:
    * **Name:** vmware migration toolkit project
    * **Source Control Type:** Git
-   * **Source Control URL:** `https://github.com/os-migrate/vmware-migration-kit`
-   * **Source Control Branch/tag/commit:** `stable`
+   * **Source Control URL:** `https://github.com/pnavarro/vmware-migration-kit`
+   * **Source Control Branch/tag/commit:** `pnavarro-stable`
 3. Click *Create Project*.
 
 === Creating the Job Template
@@ -205,15 +176,45 @@ EOF
 2. Locate the *HAProxy VM Migration* template.
 3. Click the *rocket icon* to launch the migration.
 
-== Access to the VM using Horizon
+Note: The migration would take around 20 minutes. In the meantime, you can continue with the next lab and come back later to check the migration status.
 
-1. Access to Horizon using the URL: https://horizon-openstack.apps.{guid}.dynamic.redhatworkshops.io
-2. In the top panel, Instances, click on the instance: haproxy-{guid}
-3. Click the tab Console to access to the console.
+== Ping to the migrated VM
 
-== Delete the VM in the RHOSO environment
+From the bastion, attach a floating IP to the migrated virtual machine:
+
+[source,bash,role=execute]
+----
+openstack floating ip create public
+openstack server add floating ip haproxy_{guid} {FLOATING_IP}
+----
+
+From the bastion, ping to the migrated virtual machine:
 
 [source,bash,role=execute,subs=attributes]
 ----
-openstack server delete haproxy-{guid}
+ping {FLOATING_IP}
+----
+
+== Delete the VM in the RHOSO environment before the next lab
+
+[source,bash,role=execute,subs=attributes]
+----
+openstack server delete haproxy_{guid}
+openstack volume delete haproxy_{guid}-2000
+openstack port delete haproxy_{guid}-NIC-0-VLAN-private
+----
+
+== Troubleshooting the Migration
+
+If the migration fails, or you want to troubleshoot the migration, you can access the logs by logging into the conversion host using the following command:
+[source,bash,role=execute]
+----
+ssh -i /home/lab-user/.ssh/{guid}key.pem cloud-user@{rhoso_conversion_host_ip}
+----
+
+Then, you can access the logs of the migration using the following command:
+[source,bash,role=execute]
+----
+sudo -i
+less /tmp/osm-nbdkit-haproxy_{guid}-*.log
 ----

@@ -197,8 +197,8 @@
     description: "VMware to RHOSO migration toolkit"
     organization: "Default"
     scm_type: git
-    scm_url: "https://github.com/os-migrate/vmware-migration-kit"
-    scm_branch: "stable"
+    scm_url: "{{ vmware_migration_kit_scm_url }}"
+    scm_branch: "{{ vmware_migration_kit_scm_branch }}"
     scm_update_on_launch: true
     default_environment: "VMware Migration toolkit execution environment"
     state: present

@@ -1,0 +1,94 @@
+---
+# Create a VM in VMware with CBT enabled and cloud-init guestinfo (per seeding-vm-in-maintenance-windows.adoc).
+# Uses community.vmware. Run on bastion; requires vcenter_hostname, vcenter_username, vcenter_password in inventory.
+# PyVmomi is required by community.vmware VMware modules.
+
+- name: Ensure PyVmomi is installed for community.vmware (CBT VM creation)
+  ansible.builtin.pip:
+    name: pyvmomi
+    state: present
+  delegate_to: localhost
+  become: false
+
+- name: Set effective CBT VM folder (full path or fallback)
+  ansible.builtin.set_fact:
+    cbt_vm_folder_effective: "{{ (((cbt_vm_folder_path | default('')) | trim | length) > 0) | ternary((cbt_vm_folder_path | trim), cbt_vm_folder) }}"
+
+- name: Check if CBT VM already exists
+  community.vmware.vmware_guest_info:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    datacenter: "{{ cbt_vm_datacenter }}"
+    folder: "{{ cbt_vm_folder_effective }}"
+    name: "{{ seeding_cutover_vms_list[0] }}"
+  register: cbt_vm_info
+  ignore_errors: true
+  delegate_to: localhost
+
+- name: Set cloud-init userdata and metadata (base64) for CBT VM
+  ansible.builtin.set_fact:
+    cbt_vm_userdata_b64: "{{ cbt_vm_cloud_init_userdata | b64encode }}"
+    cbt_vm_metadata_b64: "{{ cbt_vm_cloud_init_metadata | b64encode }}"
+
+# When cbt_vm_network is empty, omit networks so clone inherits template network (same as govc vm.clone)
+- name: Clone VM from template (powered off) for CBT migration
+  community.vmware.vmware_guest:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    datacenter: "{{ cbt_vm_datacenter }}"
+    folder: "{{ cbt_vm_folder_effective }}"
+    name: "{{ seeding_cutover_vms_list[0] }}"
+    template: "{{ cbt_vm_template }}"
+    datastore: "{{ cbt_vm_datastore }}"
+    networks: "{{ (((cbt_vm_network | default('')) | trim | length) > 0) | ternary([{'name': (cbt_vm_network | trim)}], omit) }}"
+    annotation: "{{ cbt_vm_annotation }}"
+    state: poweredoff
+    cluster: "{{ cbt_vm_cluster if (cbt_vm_cluster | length > 0) else omit }}"
+    esxi_hostname: "{{ cbt_vm_esxi_host if (cbt_vm_esxi_host | length > 0) and (cbt_vm_cluster | length == 0) else omit }}"
+  when: cbt_vm_info.failed | default(false) or (cbt_vm_info.instance | default({}) | length == 0)
+  delegate_to: localhost
+
+- name: Enable CBT and set cloud-init guestinfo on CBT VM
+  community.vmware.vmware_guest:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    datacenter: "{{ cbt_vm_datacenter }}"
+    folder: "{{ cbt_vm_folder_effective }}"
+    name: "{{ seeding_cutover_vms_list[0] }}"
+    state: present
+    advanced_settings:
+      - key: ctkEnabled
+        value: "TRUE"
+      - key: scsi0:0.ctkEnabled
+        value: "TRUE"
+      - key: guestinfo.userdata
+        value: "{{ cbt_vm_userdata_b64 }}"
+      - key: guestinfo.userdata.encoding
+        value: "base64"
+      - key: guestinfo.metadata
+        value: "{{ cbt_vm_metadata_b64 }}"
+      - key: guestinfo.metadata.encoding
+        value: "base64"
+  delegate_to: localhost
+
+- name: Power on CBT VM
+  community.vmware.vmware_guest:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: false
+    datacenter: "{{ cbt_vm_datacenter }}"
+    folder: "{{ cbt_vm_folder_effective }}"
+    name: "{{ seeding_cutover_vms_list[0] }}"
+    state: poweredon
+  delegate_to: localhost
+
+- name: Display CBT VM creation result
+  ansible.builtin.debug:
+    msg: "CBT VM '{{ seeding_cutover_vms_list[0] }}' created and powered on in folder {{ cbt_vm_folder_effective }} (root password: redhat)."

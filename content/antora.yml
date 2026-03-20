@@ -1,13 +1,13 @@
 ---
 name: modules
-title: Red Hat OpenStack Services on OpenShift Hands on Lab
+title: Red Hat OpenStack VMware Migration Toolkit Enablement Training
 version: master
 nav:
   - modules/ROOT/nav.adoc
 
 asciidoc:
   attributes:
-    lab_name: "Red Hat OpenStack Services on OpenShift Hands on Lab"
+    lab_name: "Red Hat OpenStack VMware Migration Toolkit Enablement Training"
     release-version: master
     page-pagination: true
     my_var: "foo"

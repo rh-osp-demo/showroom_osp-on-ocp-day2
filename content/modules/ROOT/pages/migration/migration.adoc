@@ -7,11 +7,6 @@ In this lab, you will use the following infrastructure:
 * A RHEL 9.4 virtualised compute host
 * A vcenter environment
 
-In this lab we will first install a Red Hat OpenStack Services on OpenShift environment.
-
-Then we will go through a virtual machine migration from Vmware vCenter to the RHOSO environment.
-
-Within the lab environment, you will be able to copy and paste the specified commands into the CLI.
-For some steps you may also need to edit some of the commands from the  instructions.
+RHOSO 18 is already deployed in the lab environment.
 
 *Be sure to review all commands carefully both for functionality and syntax!*
