@@ -349,6 +349,7 @@ show_usage() {
     echo "  install-operators - Install OpenStack operators"
     echo "  security      - Configure secrets and security"
     echo "  nfs-server    - Configure NFS server"
+    echo "  deploy-rhosp  - Deploy RHOSP 17.1 standalone environment (for adoption)"
     echo "  network-isolation - Set up network isolation"
     echo "  control-plane - Deploy OpenStack control plane"
     echo "  data-plane    - Configure compute nodes"
@@ -362,6 +363,7 @@ show_usage() {
     echo "  $0 -c                                 # Check inventory configuration"
     echo "  $0 -d control-plane                   # Dry run of control plane deployment"
     echo "  $0 -v prerequisites                   # Verbose prerequisites installation"
+    echo "  $0 deploy-rhosp                        # Deploy RHOSP 17.1 standalone environment"
     echo "  $0 -b full                            # Run full deployment in background"
     echo "  $0 --follow-logs install-operators    # Run and follow logs in real-time"
     echo "  $0 --status                           # Show status of background deployments"
@@ -650,6 +652,10 @@ run_deployment() {
             'nfs-server')
                 echo 'Configuring NFS server...'
             ansible-playbook site.yml --tags nfs-server $ansible_opts
+            ;;
+            'deploy-rhosp')
+                echo 'Deploying RHOSP 17.1 standalone environment...'
+            ansible-playbook site.yml --tags deploy-rhosp $ansible_opts
             ;;
             'network-isolation')
                 echo 'Setting up network isolation...'
