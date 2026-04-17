@@ -97,6 +97,10 @@ patches:
     target:
       kind: OpenStackDataPlaneNodeSet
       name: preprovisioned-nodeset
+  - path: patch-pvc-storageclass.yaml
+    target:
+      kind: PersistentVolumeClaim
+      name: openstack-dataplane-ansible-log
 ----
 
 Let's create the patches files, *patch-nodeset-nodes.yaml* content:
@@ -141,6 +145,17 @@ cat << EOF > environments/demo-env/dataplane/patch-nodeset-ansible.yaml
 - op: replace
   path: /spec/nodeTemplate/ansible/ansibleVars/dns_search_domains
   value: sandbox-{guid}-ocp4-cluster.svc.cluster.local
+EOF
+----
+
+Let's create the patches files, *patch-pvc-storageclass.yaml* content:
+
+[source,bash,role=execute,subs=attributes]
+----
+cat << EOF > environments/demo-env/dataplane/patch-pvc-storageclass.yaml
+- op: add
+  path: /spec/storageClassName
+  value: ocs-external-storagecluster-ceph-rbd-immediate
 EOF
 ----
 

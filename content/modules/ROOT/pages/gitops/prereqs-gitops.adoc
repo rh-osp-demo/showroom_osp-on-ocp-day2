@@ -1,36 +1,97 @@
 = Install pre-requisites
 
-== Using ArgoCD application to install RHOSO pre-requisites
+== Install RHOSO pre-requisites using Ansible
 
-Create an argocd application manifest to deploy all the prerequisites for the RHOSO control plane installation:
+=== 1. Clone and Setup
 
-[source,bash,role=execute]
+From your bastion, nagivate to the repository:
+
+[source,bash,role=execute,subs=attributes]
 ----
-oc apply -k https://github.com/pnavarro/rhoso-gitops/applications/base/prerequisites
-----
+# Clone the repository
+cd ~/labrepo/ansible-playbooks
 
-Wait for the Application to deploy successfully:
-
-[source,bash,role=execute]
-----
-oc wait --timeout=600s -nopenshift-gitops applications.argoproj.io/openstack-prerequisites --for jsonpath='{.status.health.status}'=Healthy
-----
-
-Review the Application state to verify that the health status is Healthy:
-
-[source,bash,role=execute]
-----
-oc get applications.argoproj.io -nopenshift-gitops openstack-prerequisites -w
+# Copy and configure inventory
+cp inventory/hosts.yml.example inventory/hosts-{guid}.yml
+cp credentials.yml.example credentials.yml
 ----
 
-Click Control + C when you see that the ArgoCD has moved to Healthy state
+=== 2. Configure Inventory
 
-.Sample Output
+Edit `inventory/hosts-{guid}.yml` with your environment details:
+
+[source,yaml,role=execute,subs=attributes]
 ----
-openstack-prerequisites   Synced        Healthy
+cat << EOF > inventory/hosts-{guid}.yml
+
+all:
+  vars:
+    # REQUIRED: Lab Environment Configuration
+    lab_guid: "{guid}"                                 # Replace with your actual lab GUID
+    bastion_user: "lab-user"                             # User account on bastion host
+    
+    # REQUIRED: Red Hat Customer Portal Credentials  
+    # Your login credentials for https://access.redhat.com
+
+    # Red Hat Registry credentials (required)
+    registry_username: ""  # Add your Red Hat registry service account username
+    registry_password: ""  # Add your Red Hat registry service account password/token
+    
+    # Subscription Manager credentials (required)
+    rhc_username: ""  # Add your Red Hat Customer Portal username
+    rhc_password: ""  # Add your Red Hat Customer Portal password
+    
+    # OPTIONAL: Internal lab hostnames (usually defaults work)
+    nfs_server_hostname: "nfsserver"                  # Internal NFS server hostname
+    compute_hostname: "compute01"                     # Internal compute node hostname
+    
+    # OPTIONAL: External IP configuration for OpenShift worker nodes
+    # These IPs are used to configure the external network interfaces on OCP worker nodes
+    rhoso_external_ip_worker_1: "{rhoso_external_ip_worker_1}"        # External IP for worker node 1
+    rhoso_external_ip_worker_2: "{rhoso_external_ip_worker_2}"        # External IP for worker node 2
+    rhoso_external_ip_worker_3: "{rhoso_external_ip_worker_3}"        # External IP for worker node 3
+    
+    # OPTIONAL: Network configuration (usually defaults work)
+    rhoso_external_ip_bastion: "{rhoso_external_ip_bastion}"         # External IP for bastion
+
+# Bastion host (localhost when running directly from bastion)
+bastion:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: "/usr/bin/python3.11"
+
+# NFS server operations (direct SSH from bastion)
+nfsserver:
+  hosts:
+    nfs-server:
+      ansible_host: "{{ nfs_server_hostname }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/lab-user/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+# Compute node operations (direct SSH from bastion)  
+compute_nodes:
+  hosts:
+    compute01:
+      ansible_host: "{{ compute_hostname }}"
+      ansible_user: "cloud-user"
+      ansible_ssh_private_key_file: "/home/lab-user/.ssh/{{ lab_guid }}key.pem"
+      ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+EOF
 ----
 
-You can also access the OpenShift Gitops console by logging in with the username admin and the password:
+=== 3. Execute Ansible playbook to install RHOSO pre-requisites
+
+Execute the following command to deploy RHOSO:
+
+[source,bash,role=execute,subs=attributes]
+----
+./deploy-from-bastion.sh --inventory inventory/hosts-{guid}.yml prerequisites
+----
+
+== How to access the OpenShift Gitops console
 
 Extract the password from the admin user Secret:
 

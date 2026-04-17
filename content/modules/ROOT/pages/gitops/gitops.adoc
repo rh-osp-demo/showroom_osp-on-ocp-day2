@@ -66,11 +66,14 @@ ssh-add ~/.ssh/{guid}key.pem
 Copy the public key `~/.ssh/{guid}key.pub` from the bastion to your GitHub account:
 
 1. Copy the SSH public key to your clipboard.
-2. In the upper-right corner of any page on GitHub, click your profile photo, then click *Settings*.
-3. In the "Access" section of the sidebar, click *SSH and GPG keys*.
-4. Click *New SSH key* or *Add SSH key*.
+2. In the forked repository page, click on the *Settings* tab.
+3. In the *Code and automation* section, click *Deploy keys*.
+4. Click *Add deploy key*.
 5. In the *Title* field, add a descriptive label, such as `"bastion RHOSO gitops key"`.
 6. Click *Add SSH key*.
+7. Paste the SSH public key into the *Key* field.
+8. Check the *Allow write access* checkbox.
+9. Click *Save*.
 
 == Set Your Repository URL
 

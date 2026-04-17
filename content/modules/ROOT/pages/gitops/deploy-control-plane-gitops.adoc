@@ -12,7 +12,7 @@ cd /home/lab-user/labrepo/content/files/manifests
 Create the environment/base directory
 [source,bash,role=execute]
 ----
-mkdir -p environments/base
+mkdir -p base
 ----
 
 [source,bash,role=execute]
@@ -22,7 +22,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 components:
-  - https://github.com/openstack-gitops/rhoso-gitops/base/initialize/gitops/components/annotations?ref=main
+  - https://github.com/openstack-k8s-operators/gitops/components/argocd/annotations?ref=v0.1.1
 
 resources:
   - https://github.com/rh-osp-demo/showroom_osp-on-ocp-day2/content/files/manifests/base/controlplane/?ref=main
@@ -90,7 +90,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../../base/controlplane
+  - ../../base/controlplane
 
 patches:
   - target:
@@ -107,7 +107,7 @@ patches:
         value: "control-plane-cluster-{guid}-1"
       - op: replace
         path: /spec/desiredState/interfaces/3/ipv4/address/0/ip
-        value: "1{rhoso_external_ip_worker_1}"
+        value: "{rhoso_external_ip_worker_1}"
 
   - target:
       group: nmstate.io

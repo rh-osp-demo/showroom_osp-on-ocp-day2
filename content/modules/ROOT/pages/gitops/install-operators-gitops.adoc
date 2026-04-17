@@ -20,7 +20,7 @@ Create an argocd application manifest to deploy the openstack operator:
 
 [source,bash,role=execute]
 ----
-oc apply -k https://github.com/openstack-gitops/rhoso-gitops/applications/base/openstack-operator
+oc apply -k example/openstack-operator/
 ----
 
 Wait for the Application to deploy successfully:
