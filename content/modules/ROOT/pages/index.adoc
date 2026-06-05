@@ -1,5 +1,16 @@
-= {lab_name}
+ {lab_name}
 
-welcome to the Red Hat OpenStack VMware Migration Toolkit lab instructions. These instructions will guide you through the migration of virtual machines from VMware to Red Hat OpenStack Services on OpenShift using the Red Hat OpenStack VMware Migration Toolkit.
+Welcome to the Red Hat OpenStack Services on OpenShift (RHOSO) lab instructions.
+These instructions will guide you through the installation of the next generation of Red Hat's OpenStack product onto an existing OpenShift Cluster utilizing a bastion host and a single host for the data plane.
+
+You have four installation options: 
+
+* xref:connected/connected.adoc[Install RHOSO using CDN - Connected environment]
+* xref:updates/updates.adoc[Install a previous version of RHOSO to update it to the latest]
+* xref:gitops/gitops.adoc[Install RHOSO using Gitops ArgoCD]
+* xref:migration/migration.adoc[Vmware to RHOSO VM migration using Red Hat OpenStack Vmware Migration Toolkit] 
+
+Within the lab environment, you will be able to copy and paste the specified commands into the CLI.
+For some steps you may also need to edit some of the commands from the  instructions.
 
 *Be sure to review all commands carefully both for functionality and syntax!*

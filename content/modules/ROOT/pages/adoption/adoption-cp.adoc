@@ -1,2 +1,0 @@
-include::adoption-attributes.adoc[]
-include::assemblies/assembly_adopting-openstack-control-plane-services.adoc[leveloffset=+1]
