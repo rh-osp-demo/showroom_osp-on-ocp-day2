@@ -58,6 +58,19 @@ Click *Create Host*.
 
 ==== If using OCP container registry:
 
+Get the default route hostname
+[source,bash,role=execute,subs=attributes]
+----
+REG_ROUTE=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}')
+PROJECT=aap
+----
+
+Your execution environment URL is:
+[source,bash,role=execute,subs=attributes]
+----
+echo $REG_ROUTE/$PROJECT/rhospvmt-ee:latest
+----
+
 1. From the navigation panel, go to *Automation Execution* → *Infrastructure* → *Execution Environments*.
 2. Click *Create Execution Environment* and set the following parameters:
    * **Name:** VMware Migration toolkit execution environment
@@ -110,6 +123,8 @@ Create the `/home/lab-user/os-migrate-env/os_migrate_for_aap.yaml` file:
 ----
 cat << EOF > /home/lab-user/os-migrate-env/os_migrate_for_aap.yaml
 os_migrate_tear_down: false
+import_workloads_vmware_insecure: true
+import_workloads_openstack_insecure: true
 # osm working directory:
 runner_from_aee: true
 os_migrate_vmw_data_dir: /tmp/os-migrate
@@ -131,7 +146,7 @@ copy_metadata_to_conv_host: true
 used_mapped_networks: false
 
 os_migrate_configure_network: true
-
+import_workloads_vmware_insecure: true
 vms_list:
   - haproxy-{guid}
 

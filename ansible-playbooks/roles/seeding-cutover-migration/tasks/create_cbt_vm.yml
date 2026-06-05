@@ -32,23 +32,16 @@
     cbt_vm_userdata_b64: "{{ cbt_vm_cloud_init_userdata | b64encode }}"
     cbt_vm_metadata_b64: "{{ cbt_vm_cloud_init_metadata | b64encode }}"
 
-# When cbt_vm_network is empty, omit networks so clone inherits template network (same as govc vm.clone)
-- name: Clone VM from template (powered off) for CBT migration
-  community.vmware.vmware_guest:
+# Rename pre-deployed source VM to the CBT migration target name (same as govc vm.change -name)
+- name: Rename CBT source VM for migration
+  community.vmware.vmware_object_rename:
     hostname: "{{ vcenter_hostname }}"
     username: "{{ vcenter_username }}"
     password: "{{ vcenter_password }}"
     validate_certs: false
-    datacenter: "{{ cbt_vm_datacenter }}"
-    folder: "{{ cbt_vm_folder_effective }}"
-    name: "{{ seeding_cutover_vms_list[0] }}"
-    template: "{{ cbt_vm_template }}"
-    datastore: "{{ cbt_vm_datastore }}"
-    networks: "{{ (((cbt_vm_network | default('')) | trim | length) > 0) | ternary([{'name': (cbt_vm_network | trim)}], omit) }}"
-    annotation: "{{ cbt_vm_annotation }}"
-    state: poweredoff
-    cluster: "{{ cbt_vm_cluster if (cbt_vm_cluster | length > 0) else omit }}"
-    esxi_hostname: "{{ cbt_vm_esxi_host if (cbt_vm_esxi_host | length > 0) and (cbt_vm_cluster | length == 0) else omit }}"
+    object_name: "{{ cbt_vm_template }}"
+    object_type: VirtualMachine
+    new_name: "{{ seeding_cutover_vms_list[0] }}"
   when: cbt_vm_info.failed | default(false) or (cbt_vm_info.instance | default({}) | length == 0)
   delegate_to: localhost
 

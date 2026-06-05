@@ -77,6 +77,8 @@ used_mapped_networks: false
 os_migrate_configure_network: true
 
 os_migrate_tear_down: false
+import_workloads_vmware_insecure: true
+import_workloads_openstack_insecure: true
 
 vms_list:
   - haproxy-{guid}

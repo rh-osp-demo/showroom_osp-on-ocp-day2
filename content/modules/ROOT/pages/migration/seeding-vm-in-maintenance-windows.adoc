@@ -53,35 +53,13 @@ Set the GUID and read the public key (run this first):
 GUID='{guid}'
 PUBKEY_FILE="/home/lab-user/.ssh/{guid}key.pub"
 PUBKEY="$(< "$PUBKEY_FILE")"
-VM_SOURCE="haproxy-{guid}"
+VM_SOURCE="database-{guid}"
 VM_NAME="rhel4cbt-{guid}"
 ----
 
 Create the VM with cloud-init and power it on (run this second):
 [source,bash,role=execute,subs=none]
 ----
-
-FOLDER="ocpvirt-$GUID"
-
-# Obtener el datacenter real desde vCenter a partir de la VM/template origen
-GOVC_DATACENTER=$(./govc find / -type m -name "$VM_SOURCE" | awk -F/ 'NF>1 {print $2; exit}')
-
-if [ -z "$GOVC_DATACENTER" ]; then
-  echo "Could not determine datacenter for VM source: $VM_SOURCE"
-  exit 1
-fi
-
-export GOVC_DATACENTER
-
-case "$GOVC_DATACENTER" in
-  RS01) export GOVC_DATASTORE='workload_share_kc7AL' ;;
-  RS00) export GOVC_DATASTORE='workload_share_QHFNI' ;;
-  *)
-    echo "Unsupported datacenter: $GOVC_DATACENTER"
-    exit 1
-    ;;
-esac
-
 USERDATA=$(printf '%s\n' \
   '#cloud-config' \
   'disable_root: false' \
@@ -100,7 +78,7 @@ METADATA='{}'
 USERDATA_B64=$(printf "%s" "$USERDATA" | base64 | tr -d '\n')
 METADATA_B64=$(printf "%s" "$METADATA" | base64 | tr -d '\n')
 
-./govc vm.clone -vm="$VM_SOURCE" -folder="$FOLDER" -on=false -annotation='Created via govc' "$VM_NAME"
+govc vm.change -vm "$VM_SOURCE" -name "$VM_NAME"
 
 ./govc vm.change -vm "$VM_NAME" -e="ctkEnabled=TRUE"
 ./govc vm.change -vm "$VM_NAME" -e="scsi0:0.ctkEnabled=TRUE"
@@ -149,6 +127,8 @@ Create the `/home/lab-user/os-migrate-env/os_migrate_for_aap_seeding.yaml` file:
 ----
 cat << EOF > /home/lab-user/os-migrate-env/os_migrate_for_aap_seeding.yaml
 os_migrate_tear_down: false
+import_workloads_vmware_insecure: true
+import_workloads_openstack_insecure: true
 # osm working directory:
 runner_from_aee: true
 os_migrate_vmw_data_dir: /tmp/os-migrate
@@ -168,7 +148,7 @@ use_existing_flavor: false
 os_migrate_create_network_port: true
 copy_metadata_to_conv_host: true
 used_mapped_networks: false
-
+import_workloads_vmware_insecure: true
 os_migrate_configure_network: true
 
 vms_list:
