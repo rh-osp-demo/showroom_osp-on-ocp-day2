@@ -125,6 +125,7 @@ cat << EOF > /home/lab-user/os-migrate-env/os_migrate_for_aap.yaml
 os_migrate_tear_down: false
 import_workloads_vmware_insecure: true
 import_workloads_openstack_insecure: true
+openstack_insecure: true
 # osm working directory:
 runner_from_aee: true
 os_migrate_vmw_data_dir: /tmp/os-migrate
@@ -168,6 +169,7 @@ dst_cloud:
   region_name: regionOne
   interface: public
   insecure: true
+  openstack_insecure: true
   identity_api_version: 3
 EOF
 ----
