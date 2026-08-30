@@ -195,6 +195,14 @@
   delegate_to: allinone
   become_user: cloud-user
 
+- name: Check if clouds.yaml already exists
+  tags: [standalone, install]
+  stat:
+    path: /home/cloud-user/.config/openstack/clouds.yaml
+  register: st
+  delegate_to: allinone
+  become_user: cloud-user
+
 - name: Run openstack_standalone.sh script
   tags: [standalone, install]
   ansible.builtin.shell:
@@ -203,6 +211,7 @@
   become_user: cloud-user
   async: 3600
   poll: 60
+  when: not st.stat.exists
 
 - name: Wait for OpenStack deployment to complete
   tags: [standalone, install]
@@ -211,6 +220,7 @@
     timeout: 3600
   delegate_to: allinone
   become_user: cloud-user
+  when: not st.stat.exists
 
 # === Disable Standalone Compute ===
 - name: Disable standalone compute service
